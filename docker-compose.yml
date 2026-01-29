@@ -1,0 +1,20 @@
+services:
+  trino:
+    image: trinodb/trino:latest
+    container_name: trino-jedi
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./catalog:/etc/trino/catalog
+    depends_on:
+      - database
+
+  database:
+    image: postgres:15
+    container_name: postgres-jedi
+    environment:
+      POSTGRES_USER: trino
+      POSTGRES_PASSWORD: trino
+      POSTGRES_DB: postgres
+    volumes:
+      - .:/project_data

@@ -1,0 +1,22 @@
+docker compose up -d
+docker compose down
+
+
+docker exec -it postgres-jedi psql -U trino -d postgres
+
+
+DROP TABLE IF EXISTS my_data;
+
+CREATE TABLE my_data (
+    id INTEGER,
+    district TEXT,
+    datetime TIMESTAMP,
+    primary_type TEXT,
+    lat DOUBLE PRECISION,
+    lon DOUBLE PRECISION
+);
+
+COPY my_data 
+FROM '/project_data/datasets/large/scale_1/crime_data.csv' 
+DELIMITER ',' 
+CSV HEADER;

@@ -1,0 +1,42 @@
+{
+  "timestamp": "2026-01-14T03:20:04.956664",
+  "system": "trino",
+  "trino_version": "479",
+  "trino_config": {
+    "session_properties": {
+      "adaptive_partial_aggregation_enabled": "true",
+      "adaptive_partial_aggregation_unique_rows_ratio_threshold": "0.8",
+      "aggregation_operator_unspill_memory_limit": "4MB",
+      "collect_plan_statistics_for_all_queries": "false",
+      "colocated_join": "true",
+      "columnar_filter_evaluation_enabled": "true",
+      "default_filter_factor_enabled": "false",
+      "determine_partition_count_for_write_enabled": "false",
+      "dictionary_aggregation": "false",
+      "distinct_aggregations_strategy": ""
+    },
+    "cluster_nodes": 1,
+    "coordinator_count": 1
+  },
+  "client_python_version": "3.11.3",
+  "client_os": "Windows",
+  "client_os_version": "10",
+  "benchmark_config": {
+    "iterations": 5,
+    "warmup_runs": 1,
+    "connection": {
+      "host": "localhost",
+      "port": 8080,
+      "user": "admin",
+      "catalog": "postgres",
+      "schema": "public"
+    }
+  },
+  "hardware_info": {
+    "cpu_model": "",
+    "cpu_cores_allocated": 12,
+    "ram_allocated_gb": 7.7,
+    "disk_type": "SSD",
+    "environment": "Docker"
+  }
+}
