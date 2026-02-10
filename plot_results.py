@@ -81,40 +81,61 @@ def plot_throughput_comparison(df):
     plt.close()
 
 def plot_cpu_memory(df):
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+    """Plot 3: Separate CPU and Memory usage plots with bar values"""
+    df_cpu = df[df['cpu_seconds'].notna() & (df['cpu_seconds'] != '')].copy()
+    df_mem = df[df['peak_memory_mb'].notna() & (df['peak_memory_mb'] != '')].copy()
     
-    df_cpu = df[df['cpu_seconds'].notna() & (df['cpu_seconds'] != '')]
-    df_mem = df[df['peak_memory_mb'].notna() & (df['peak_memory_mb'] != '')]
-    
+    # Plot CPU Usage
     if len(df_cpu) > 0:
+        fig, ax = plt.subplots(figsize=(14, 6))
+        
         df_cpu['cpu_seconds'] = pd.to_numeric(df_cpu['cpu_seconds'])
         medians_cpu = df_cpu.groupby('query_pattern')['cpu_seconds'].median().sort_values()
         df_sorted_cpu = df_cpu.set_index('query_pattern').loc[medians_cpu.index].reset_index()
         
-        sns.barplot(data=df_sorted_cpu, x='query_pattern', y='cpu_seconds', 
-                    estimator='median', errorbar=('pi', 50), ax=ax1, color='steelblue')
-        ax1.set_xlabel('Query Pattern', fontsize=12)
-        ax1.set_ylabel('CPU Time (seconds, server-side)', fontsize=12)
-        ax1.set_title('Server CPU Usage per Query Pattern', fontsize=14)
+        bars = sns.barplot(data=df_sorted_cpu, x='query_pattern', y='cpu_seconds', 
+                    estimator='median', errorbar=('pi', 50), ax=ax, color='steelblue')
         
-        plt.setp(ax1.get_xticklabels(), rotation=45, ha='right', rotation_mode='anchor')
+        # Add value labels on bars (padding=15 to clear error bars)
+        for container in ax.containers:
+            ax.bar_label(container, fmt='%.2f', fontsize=9, padding=15)
+        
+        ax.set_xlabel('Query Pattern', fontsize=12)
+        ax.set_ylabel('CPU Time (seconds, server-side)', fontsize=12)
+        ax.set_title('Server CPU Usage per Query Pattern', fontsize=14)
+        plt.setp(ax.get_xticklabels(), rotation=45, ha='right', rotation_mode='anchor')
+        
+        plt.tight_layout()
+        plt.savefig(f'{OUTPUT_DIR}/cpu_usage.pdf', dpi=300, bbox_inches='tight')
+        plt.savefig(f'{OUTPUT_DIR}/cpu_usage.png', dpi=300, bbox_inches='tight')
+        print("✓ Generated: cpu_usage.pdf/.png")
+        plt.close()
 
+    # Plot Memory Usage
     if len(df_mem) > 0:
+        fig, ax = plt.subplots(figsize=(14, 6))
+        
         df_mem['peak_memory_mb'] = pd.to_numeric(df_mem['peak_memory_mb'])
         medians_mem = df_mem.groupby('query_pattern')['peak_memory_mb'].median().sort_values()
         df_sorted_mem = df_mem.set_index('query_pattern').loc[medians_mem.index].reset_index()
         
-        sns.barplot(data=df_sorted_mem, x='query_pattern', y='peak_memory_mb', 
-                    estimator='median', errorbar=('pi', 50), ax=ax2, color='coral')
-        ax2.set_xlabel('Query Pattern', fontsize=12)
-        ax2.set_ylabel('Peak Memory (MB, server-side)', fontsize=12)
-        ax2.set_title('Server Memory Usage per Query Pattern', fontsize=14)
+        bars = sns.barplot(data=df_sorted_mem, x='query_pattern', y='peak_memory_mb', 
+                    estimator='median', errorbar=('pi', 50), ax=ax, color='coral')
         
-        plt.setp(ax2.get_xticklabels(), rotation=45, ha='right', rotation_mode='anchor')
-    
-    plt.tight_layout()
-    plt.savefig(f'{OUTPUT_DIR}/cpu_memory_usage.png', dpi=300, bbox_inches='tight')
-    plt.close()
+        # Add value labels on bars (padding=15 to clear error bars)
+        for container in ax.containers:
+            ax.bar_label(container, fmt='%.1f', fontsize=9, padding=15)
+        
+        ax.set_xlabel('Query Pattern', fontsize=12)
+        ax.set_ylabel('Peak Memory (MB, server-side)', fontsize=12)
+        ax.set_title('Server Memory Usage per Query Pattern', fontsize=14)
+        plt.setp(ax.get_xticklabels(), rotation=45, ha='right', rotation_mode='anchor')
+        
+        plt.tight_layout()
+        plt.savefig(f'{OUTPUT_DIR}/memory_usage.pdf', dpi=300, bbox_inches='tight')
+        plt.savefig(f'{OUTPUT_DIR}/memory_usage.png', dpi=300, bbox_inches='tight')
+        print("✓ Generated: memory_usage.pdf/.png")
+        plt.close()
 
 def plot_runtime_vs_rows(df):
     """Plot 4: Runtime vs. Input Rows Processed (scalability analysis)"""

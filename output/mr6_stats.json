@@ -1,50 +1,50 @@
 {
   "01_overlap_default.sql": {
-    "runtime_median": 3.82,
-    "throughput_median": 261780.1047120419,
-    "cpu_median": 1.34,
+    "runtime_median": 3.66,
+    "throughput_median": 273224.04371584696,
+    "cpu_median": 1.29,
     "memory_median": 28.69229221343994
   },
   "02_overlap.sql": {
-    "runtime_median": 6.74,
-    "throughput_median": 148367.9525222552,
-    "cpu_median": 2.02,
+    "runtime_median": 6.32,
+    "throughput_median": 158227.84810126582,
+    "cpu_median": 1.8,
     "memory_median": 28.6923189163208
   },
   "03_greedy.sql": {
-    "runtime_median": 2.71,
-    "throughput_median": 369003.6900369004,
-    "cpu_median": 2.17,
-    "memory_median": 25.1719970703125
+    "runtime_median": 2.59,
+    "throughput_median": 386100.3861003861,
+    "cpu_median": 2.06,
+    "memory_median": 25.171836853027344
   },
   "03_reluctant.sql": {
-    "runtime_median": 3.35,
-    "throughput_median": 298507.46268656716,
-    "cpu_median": 2.73,
-    "memory_median": 25.172130584716797
+    "runtime_median": 3.37,
+    "throughput_median": 296735.9050445104,
+    "cpu_median": 2.56,
+    "memory_median": 25.171993255615234
   },
   "04_define.sql": {
-    "runtime_median": 5.12,
-    "throughput_median": 195312.5,
-    "cpu_median": 2.53,
-    "memory_median": 40.14997959136963
+    "runtime_median": 4.98,
+    "throughput_median": 200803.2128514056,
+    "cpu_median": 2.56,
+    "memory_median": 40.15029239654541
   },
   "05_ONE ROW PER MATCH.sql": {
-    "runtime_median": 2.37,
-    "throughput_median": 421940.9282700422,
+    "runtime_median": 2.33,
+    "throughput_median": 429184.54935622314,
     "cpu_median": 1.59,
-    "memory_median": 25.17169952392578
+    "memory_median": 25.171783447265625
   },
   "06_ALL ROW PER MATCH.sql": {
-    "runtime_median": 12.36,
-    "throughput_median": 80906.14886731392,
-    "cpu_median": 2.68,
-    "memory_median": 98.61330032348633
+    "runtime_median": 12.05,
+    "throughput_median": 82987.55186721991,
+    "cpu_median": 2.63,
+    "memory_median": 86.61130428314209
   },
   "07_SUBSET.sql": {
-    "runtime_median": 2.54,
-    "throughput_median": 393700.7874015748,
-    "cpu_median": 1.91,
+    "runtime_median": 2.55,
+    "throughput_median": 392156.8627450981,
+    "cpu_median": 1.96,
     "memory_median": 25.17200469970703
   },
   "08_WITHIN.sql": {
@@ -54,9 +54,9 @@
     "memory_median": null
   },
   "09_Nullwerte.sql": {
-    "runtime_median": 4.04,
-    "throughput_median": 247524.75247524751,
-    "cpu_median": 1.62,
-    "memory_median": 25.17174530029297
+    "runtime_median": 3.66,
+    "throughput_median": 273224.04371584696,
+    "cpu_median": 1.64,
+    "memory_median": 25.171852111816406
   }
 }

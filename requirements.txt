@@ -1,0 +1,5 @@
+trino
+requests
+pandas
+numpy
+matplotlib

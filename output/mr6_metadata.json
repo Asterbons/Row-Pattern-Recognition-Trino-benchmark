@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-01-29T21:02:12.648548",
+  "timestamp": "2026-02-10T18:34:28.575266",
   "system": "trino",
   "trino_version": "479",
   "trino_config": {
@@ -18,14 +18,14 @@
     "cluster_nodes": 1,
     "coordinator_count": 1
   },
-  "client_python_version": "3.11.3",
-  "client_os": "Windows",
-  "client_os_version": "10",
+  "client_python_version": "3.11.14",
+  "client_os": "Linux",
+  "client_os_version": "6.6.87.2-microsoft-standard-WSL2",
   "benchmark_config": {
     "iterations": 5,
     "warmup_runs": 1,
     "connection": {
-      "host": "localhost",
+      "host": "trino",
       "port": 8080,
       "user": "admin",
       "catalog": "postgres",

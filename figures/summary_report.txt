@@ -8,7 +8,7 @@ System Information:
   Cluster Nodes: 1
   Warmup Runs: 1
   Measurement Iterations: 5
-  Timestamp: 2026-01-29T21:02:12.648548
+  Timestamp: 2026-02-09T22:43:44.120370
 
 Benchmark Configuration:
   Total Query Patterns Tested: 9
@@ -20,27 +20,27 @@ PERFORMANCE RANKINGS
 ----------------------------------------------------------------------
 
 Top 3 Fastest Queries (median runtime):
-  1. 05_ONE ROW PER MATCH.sql: 2.3700s
-  2. 07_SUBSET.sql: 2.5400s
-  3. 03_greedy.sql: 2.7100s
+  1. 05_ONE ROW PER MATCH.sql: 2.5600s
+  2. 07_SUBSET.sql: 2.6100s
+  3. 03_greedy.sql: 2.8200s
 
 Top 3 Slowest Queries (median runtime):
-  1. 06_ALL ROW PER MATCH.sql: 12.3600s
-  2. 02_overlap.sql: 6.7400s
-  3. 04_define.sql: 5.1200s
+  1. 06_ALL ROW PER MATCH.sql: 14.2800s
+  2. 02_overlap.sql: 7.2300s
+  3. 04_define.sql: 5.7500s
 
 Top 3 Highest Throughput Queries (input rows/sec):
-  1. 05_ONE ROW PER MATCH.sql: 421,941 rows/s
-  2. 07_SUBSET.sql: 393,701 rows/s
-  3. 03_greedy.sql: 369,004 rows/s
+  1. 05_ONE ROW PER MATCH.sql: 390,625 rows/s
+  2. 07_SUBSET.sql: 383,142 rows/s
+  3. 03_greedy.sql: 354,610 rows/s
 
 ----------------------------------------------------------------------
 SERVER-SIDE RESOURCE USAGE
 ----------------------------------------------------------------------
 
 CPU Time (server):
-  Overall Median: 2.02s
-  Range: 1.31s - 2.94s
+  Overall Median: 2.11s
+  Range: 1.33s - 5.76s
 
 Peak Memory (server):
   Overall Median: 25.2MB

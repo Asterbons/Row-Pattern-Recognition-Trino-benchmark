@@ -8,8 +8,8 @@ import requests
 from datetime import datetime
 
 TRINO_CONFIG = {
-    'host': 'localhost',
-    'port': 8080,
+    'host': os.environ.get('TRINO_HOST', 'localhost'),
+    'port': int(os.environ.get('TRINO_PORT', '8080')),
     'user': 'admin',
     'catalog': 'postgres',
     'schema': 'public'
@@ -126,84 +126,10 @@ def parse_memory_to_mb(memory_str):
         except:
             return 0
 
-def get_query_stats_from_tasks(cursor, query_id):
-    """
-    Alternative method: Get stats by aggregating system.runtime.tasks
-    Works when REST API is not accessible
-    """
-    if not query_id or query_id == 'unknown':
-        return {}
-    
-    try:
-        # Small delay to ensure tasks are written
-        time.sleep(0.3)
-        
-        cursor.execute(f"""
-            SELECT 
-                SUM(split_cpu_time_ms) as total_cpu_ms,
-                SUM(processed_input_rows) as total_input_rows,
-                SUM(processed_input_bytes) as total_input_bytes,
-                SUM(output_rows) as total_output_rows,
-                SUM(output_bytes) as total_output_bytes
-            FROM system.runtime.tasks
-            WHERE query_id = '{query_id}'
-        """)
-        
-        row = cursor.fetchone()
-        if row and row[0] is not None:
-            # Note: processed_input_rows might be 0 for some queries
-            # In that case, we'll use table size estimate instead
-            return {
-                'query_id': query_id,
-                'cpu_time_ms': row[0] or 0,
-                'cpu_time_sec': (row[0] or 0) / 1000.0,
-                'physical_input_rows': row[1] if row[1] and row[1] > 0 else None,  # None = use estimate
-                'physical_input_bytes': row[2] or 0,
-                'output_rows': row[3] or 0,
-                'output_bytes': row[4] or 0,
-                'peak_memory_mb': None,  # Not available in tasks
-                'source': 'system.runtime.tasks'
-            }
-    except Exception as e:
-        print(f"      Warning: Could not fetch stats from tasks: {e}")
-    
-    return {}
-
-def get_query_stats_from_timestamps(cursor, query_id):
-    """
-    Fallback method: Compute elapsed time from timestamps in system.runtime.queries
-    Only provides elapsed time, no CPU or memory
-    """
-    if not query_id or query_id == 'unknown':
-        return {}
-    
-    try:
-        # Note: 'end' is a reserved keyword in Trino, must be quoted with double quotes
-        cursor.execute(f"""
-            SELECT 
-                CAST(to_unixtime("end") AS DOUBLE) - CAST(to_unixtime(started) AS DOUBLE) as elapsed_sec
-            FROM system.runtime.queries
-            WHERE query_id = '{query_id}'
-            AND "end" IS NOT NULL
-            AND started IS NOT NULL
-        """)
-        
-        row = cursor.fetchone()
-        if row and row[0] is not None:
-            return {
-                'query_id': query_id,
-                'elapsed_time_sec': row[0],
-                'source': 'system.runtime.queries timestamps'
-            }
-    except Exception as e:
-        print(f"      Warning: Could not compute elapsed time: {e}")
-    
-    return {}
-
 def get_query_stats_from_api(query_id):
     """
     Get query statistics from Trino REST API.
-    This is the most reliable method that works across all Trino versions.
+    Returns CPU time, memory, elapsed time, and row counts.
     """
     if not query_id or query_id == 'unknown':
         return {}
@@ -211,7 +137,6 @@ def get_query_stats_from_api(query_id):
     try:
         api_url = f"http://{TRINO_CONFIG['host']}:{TRINO_CONFIG['port']}/v1/query/{query_id}"
         
-        # Use X-Trino-User header (confirmed working from test)
         headers = {
             'X-Trino-User': TRINO_CONFIG['user']
         }
@@ -222,8 +147,7 @@ def get_query_stats_from_api(query_id):
             data = response.json()
             stats = data.get('queryStats', {})
             
-            # Extract metrics - try multiple possible field names (varies by Trino version)
-            # CPU Time
+            # CPU Time - try multiple field names (varies by Trino version)
             cpu_time = (stats.get('totalCpuTime') or 
                        stats.get('cpuTime') or 
                        stats.get('totalCpuTimeMillis') or
@@ -235,15 +159,15 @@ def get_query_stats_from_api(query_id):
                           stats.get('elapsedTimeMillis') or
                           '0ms')
             
-            # Peak Memory - try multiple field names and check outputStage
+            # Peak Memory - try multiple field names
             peak_memory = (stats.get('peakMemoryReservation') or 
-                          stats.get('peakUserMemoryReservation') or    # ← Найдено у вас!
-                          stats.get('peakTotalMemoryReservation') or   # ← Найдено у вас!
-                          stats.get('peakTaskUserMemory') or           # ← Найдено у вас!
+                          stats.get('peakUserMemoryReservation') or
+                          stats.get('peakTotalMemoryReservation') or
+                          stats.get('peakTaskUserMemory') or
                           stats.get('peakUserMemory') or 
                           stats.get('peakTotalMemory'))
             
-            # If still not found, check outputStage
+            # Check outputStage if not found
             if not peak_memory and 'outputStage' in data:
                 output_stage = data['outputStage']
                 if 'stageStats' in output_stage:
@@ -251,10 +175,9 @@ def get_query_stats_from_api(query_id):
                     peak_memory = (stage_stats.get('peakUserMemoryReservation') or
                                  stage_stats.get('peakMemoryReservation'))
             
-            # Convert memory to MB for consistency
             peak_memory_mb = parse_memory_to_mb(peak_memory) if peak_memory else 0
             
-            # Input Rows - multiple possible names
+            # Input Rows
             input_rows = (stats.get('physicalInputRows') or 
                          stats.get('processedInputRows') or
                          stats.get('rawInputRows') or
@@ -275,16 +198,14 @@ def get_query_stats_from_api(query_id):
                 'peak_memory_mb': peak_memory_mb,
                 'physical_input_rows': input_rows,
                 'output_rows': output_rows,
-                'source': 'REST API',
-                'raw_stats': stats  # Keep full stats for debugging
+                'source': 'REST API'
             }
         else:
             if response.status_code == 401:
                 print(f"      Warning: API requires authentication (401)")
-                return {}
             else:
                 print(f"      Warning: API returned status {response.status_code}")
-                return {}
+            return {}
             
     except requests.exceptions.RequestException as e:
         print(f"      Warning: API request failed: {e}")
@@ -292,31 +213,6 @@ def get_query_stats_from_api(query_id):
     except Exception as e:
         print(f"      Warning: Error parsing API response: {e}")
         return {}
-
-def get_query_stats_multi_method(cursor, query_id, sql_query=None):
-    """
-    Try multiple methods to get query stats, in order of preference:
-    1. REST API (best - has all metrics)
-    2. system.runtime.tasks (good - has CPU and rows, no memory)
-    3. Timestamp calculation (minimal - only elapsed time)
-    """
-    
-    # Method 1: Try REST API first
-    stats = get_query_stats_from_api(query_id)
-    if stats and stats.get('cpu_time_sec', 0) > 0:
-        return stats
-    
-    # Method 2: Try tasks aggregation
-    stats = get_query_stats_from_tasks(cursor, query_id)
-    if stats and stats.get('cpu_time_sec', 0) > 0:
-        return stats
-    
-    # Method 3: Fallback to timestamp calculation
-    stats = get_query_stats_from_timestamps(cursor, query_id)
-    if stats:
-        return stats
-    
-    return {}
 
 def measure_query_execution(cursor, sql_query, input_rows):
     """Execute query and measure comprehensive metrics via multiple methods"""
@@ -344,8 +240,8 @@ def measure_query_execution(cursor, sql_query, input_rows):
     end_time = time.time()
     client_duration = end_time - start_time
     
-    # Get server-side statistics (tries multiple methods)
-    server_stats = get_query_stats_multi_method(cursor, query_id, sql_query)
+    # Get server-side statistics from REST API
+    server_stats = get_query_stats_from_api(query_id)
     
     # Extract metrics from server stats
     if server_stats:
@@ -420,10 +316,9 @@ def run_benchmark():
     
     # Test metrics collection method
     print("=" * 70)
-    print("Testing Metrics Collection Methods")
+    print("Testing REST API Connection")
     print("=" * 70)
     
-    # Use a real query for testing (SELECT 1 returns near-zero metrics)
     try:
         cur.execute("SELECT count(*) FROM crime_data")
         cur.fetchone()
@@ -433,37 +328,15 @@ def run_benchmark():
             print(f"Test query: SELECT count(*) FROM crime_data")
             print(f"Query ID: {test_id}\n")
             
-            # Try each method
-            print("Method 1: REST API...")
             api_stats = get_query_stats_from_api(test_id)
             if api_stats and api_stats.get('state'):
-                print(f"  [OK] REST API works!")
-                print(f"    State: {api_stats.get('state', 'N/A')}")
-                print(f"    CPU: {api_stats.get('cpu_time_str', 'N/A')}")
-                print(f"    Memory: {api_stats.get('peak_memory_str', 'N/A')}")
-                print(f"    Elapsed: {api_stats.get('elapsed_time_str', 'N/A')}")
+                print(f"[OK] REST API works!")
+                print(f"  State: {api_stats.get('state', 'N/A')}")
+                print(f"  CPU: {api_stats.get('cpu_time_str', 'N/A')}")
+                print(f"  Memory: {api_stats.get('peak_memory_str', 'N/A')}")
+                print(f"  Elapsed: {api_stats.get('elapsed_time_str', 'N/A')}")
             else:
-                print(f"  [FAIL] REST API unavailable or returned no metrics")
-            
-            print("\nMethod 2: system.runtime.tasks aggregation...")
-            task_stats = get_query_stats_from_tasks(cur, test_id)
-            if task_stats and task_stats.get('source'):
-                print(f"  [OK] Tasks aggregation works!")
-                print(f"    CPU: {task_stats.get('cpu_time_sec', 0):.4f}s")
-                print(f"    Input rows: {task_stats.get('physical_input_rows', 0):,}")
-            else:
-                print(f"  [FAIL] Tasks aggregation returned no data")
-            
-            print("\nMethod 3: Timestamp calculation...")
-            time_stats = get_query_stats_from_timestamps(cur, test_id)
-            if time_stats and time_stats.get('elapsed_time_sec') is not None:
-                print(f"  [OK] Timestamp method works!")
-                print(f"    Elapsed: {time_stats.get('elapsed_time_sec', 0):.4f}s")
-            else:
-                print(f"  [FAIL] Timestamp method returned no data")
-            
-            # Determine which method will be used
-            print("\n==> Will use multi-method approach (tries API -> Tasks -> Timestamps)")
+                print(f"[FAIL] REST API unavailable or returned no metrics")
         else:
             print(f"[WARN] Cannot extract query_id from cursor")
     except Exception as e:
