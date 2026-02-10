@@ -12,6 +12,6 @@ CREATE TABLE IF NOT EXISTS crime_data (
 );
 
 COPY crime_data (id, district, datetime, primary_type, lat, lon)
-FROM '/project_data/datasets/tiny/crime_data.csv'
+FROM '/project_data/datasets/large/crime_data.csv'
 DELIMITER ','
 CSV HEADER;
