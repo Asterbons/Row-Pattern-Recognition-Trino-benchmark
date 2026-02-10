@@ -52,14 +52,45 @@ def get_system_metadata(conn):
     except:
         trino_config_info['cluster_nodes'] = 'unknown'
     
+    # Get host hardware info
+    cpu_model = "Unknown"
+    cpu_cores = os.cpu_count()
+    total_ram_mb = 0
+    
+    try:
+        # Linux / Docker approach
+        if platform.system() == "Linux":
+            with open('/proc/cpuinfo', 'r') as f:
+                for line in f:
+                    if "model name" in line:
+                        cpu_model = line.split(":")[1].strip()
+                        break
+            
+            with open('/proc/meminfo', 'r') as f:
+                for line in f:
+                    if "MemTotal" in line:
+                        # MemTotal:        16393932 kB
+                        kb = int(line.split(":")[1].strip().split()[0])
+                        total_ram_mb = int(kb / 1024)
+                        break
+        else:
+            # Windows/Mac fallback (less detailed for CPU model usually)
+            cpu_model = platform.processor()
+    except:
+        pass
+
     metadata = {
         'timestamp': datetime.now().isoformat(),
         'system': 'trino',
         'trino_version': trino_version,
+        'hostname': platform.node(),
+        'cpu_model': cpu_model,
+        'cpu_cores': cpu_cores,
+        'total_ram_mb': total_ram_mb,
+        'os_kernel': platform.release(),
         'trino_config': trino_config_info,
         'client_python_version': platform.python_version(),
         'client_os': platform.system(),
-        'client_os_version': platform.release(),
         'benchmark_config': {
             'iterations': ITERATIONS,
             'warmup_runs': WARMUP_RUNS,
