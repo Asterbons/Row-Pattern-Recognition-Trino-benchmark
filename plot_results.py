@@ -6,8 +6,8 @@ import json
 
 # Configuration
 INPUT_DIR = 'output'
-INPUT_FILE = os.path.join(INPUT_DIR, 'mr6_results.csv')
-METADATA_FILE = os.path.join(INPUT_DIR, 'mr6_metadata.json')
+INPUT_FILE = os.path.join(INPUT_DIR, 'VM_results.csv')
+METADATA_FILE = os.path.join(INPUT_DIR, 'VM_metadata.json')
 OUTPUT_DIR = 'figures'
 
 # Create output directory
