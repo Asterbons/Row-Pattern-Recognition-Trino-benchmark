@@ -109,7 +109,7 @@ def wait_for_data(expected_size):
 
 def run_benchmark_for_size(size):
     cmd = [
-        'docker', 'compose', '-f', COMPOSE_FILE,
+        'docker-compose', '-f', COMPOSE_FILE,
         'run', '--rm', 'benchmark',
         'python', 'benchmark.py', '--dataset-size', str(size),
     ]
