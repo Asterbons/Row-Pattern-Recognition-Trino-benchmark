@@ -50,7 +50,7 @@ CSV HEADER;
 
 
 def docker_compose(args, check=True):
-    cmd = ['docker', 'compose', '-f', COMPOSE_FILE] + args
+    cmd = ['docker-compose', '-f', COMPOSE_FILE] + args
     print(f"  [docker] {' '.join(args)}")
     return subprocess.run(cmd, cwd=PROJECT_DIR, check=check)
 
