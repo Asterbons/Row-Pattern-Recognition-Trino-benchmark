@@ -3,7 +3,7 @@
 # Date: 2025-12-07
 # Description: Generates crime data for Berlin
 
-#usage: generator.py [-h] --type {tiny,large} [--scale SCALE] [--partitions PARTITIONS]
+#usage: generator.py [-h] (--type {tiny,large} | --rows ROWS) [--scale SCALE] [--partitions PARTITIONS]
 #[--complexity COMPLEXITY] [--seed SEED] [--count COUNT] [--custom_weights "TYPE:PROBABILITY"]
 
 #options:
@@ -142,13 +142,15 @@ def save_file(df, base_path, subfolder, filename='crime_data.csv'):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--type', choices=['tiny', 'large'], required=True)
+    parser.add_argument('--type', choices=['tiny', 'large'], required=False, help='Type of data to generate')
+    parser.add_argument('--rows', type=int, default=None, help='Explicit row count (alternative to --type)')
     parser.add_argument('--scale', type=int, default=1)
     parser.add_argument('--partitions', type=int, default=1)
     parser.add_argument('--complexity', type=float, default=0.3)
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--count', type=int, default=1, help='Number of files to generate')
     parser.add_argument('--custom_weights', type=str, help='Custom weights in format "TYPE:PROB,TYPE:PROB..."', default=None)
+    parser.add_argument('--output_dir', type=str, default='../datasets', help='Base output directory for datasets')
 
     args = parser.parse_args()
 
@@ -224,9 +226,20 @@ if __name__ == "__main__":
             exit(1)
 
 
+    # Validate: must specify either --type or --rows
+    if args.rows is None and args.type is None:
+        parser.error('Either --type or --rows must be specified')
+
     base_rows = 1_000_000 # Base for scale=1
     
-    if args.type == 'tiny':
+    if args.rows is not None:
+        # Explicit row count mode (for scalability benchmarks)
+        if args.partitions == 1:
+            # Auto-calculate: 1 partition per ~10K rows, capped at 12 (Berlin districts)
+            args.partitions = min(max(1, args.rows // 10_000), 12)
+        folder = f"scalability/n_{args.rows}"
+        print(f"[Scalability mode] Rows: {args.rows:,}, Partitions: {args.partitions}")
+    elif args.type == 'tiny':
         args.rows = 50 
         args.partitions = 2
         folder = 'tiny'
@@ -247,4 +260,4 @@ if __name__ == "__main__":
         if args.count > 1:
             filename = f'crime_data_{i}.csv'
             
-        save_file(df, '../datasets', folder, filename) 
+        save_file(df, args.output_dir, folder, filename) 

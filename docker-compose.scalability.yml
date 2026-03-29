@@ -1,0 +1,62 @@
+# docker-compose.scalability.yml
+# Used by run_scalability.py for automated benchmarking across dataset sizes.
+# Keeps original docker-compose.yml untouched.
+#
+# Key differences from original:
+#   - Trino: memory limit 16GB, custom JVM + config for memory management
+#   - Postgres: memory limit 8GB, uses init-scripts-scalability/ for per-size data loading
+#   - Benchmark: same as original
+
+services:
+  trino:
+    image: trinodb/trino:434
+    container_name: trino-jedi
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./catalog:/etc/trino/catalog
+      - ./etc/trino/config.properties:/etc/trino/config.properties
+      - ./etc/trino/jvm.config:/etc/trino/jvm.config
+    mem_limit: 16g
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8080/v1/info || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  database:
+    image: postgres:15
+    container_name: postgres-jedi
+    environment:
+      POSTGRES_USER: trino
+      POSTGRES_PASSWORD: trino
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - .:/project_data
+      - ./init-scripts-scalability:/docker-entrypoint-initdb.d
+    mem_limit: 8g
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U trino" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  benchmark:
+    build: .
+    container_name: benchmark-runner
+    environment:
+      TRINO_HOST: trino
+      TRINO_PORT: 8080
+    volumes:
+      - .:/app
+    depends_on:
+      trino:
+        condition: service_healthy
+    profiles:
+      - tools
