@@ -17,7 +17,7 @@ services:
       - ./catalog:/etc/trino/catalog
       - ./etc/trino/config.properties:/etc/trino/config.properties
       - ./etc/trino/jvm.config:/etc/trino/jvm.config
-    mem_limit: 16g
+    mem_limit: 20g
     depends_on:
       database:
         condition: service_healthy
@@ -40,7 +40,7 @@ services:
     volumes:
       - .:/project_data
       - ./init-scripts-scalability:/docker-entrypoint-initdb.d
-    mem_limit: 8g
+    mem_limit: 16g
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U trino" ]
       interval: 5s

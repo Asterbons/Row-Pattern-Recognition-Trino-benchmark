@@ -1,3 +1,4 @@
+import argparse
 import trino
 import time
 import csv
@@ -17,9 +18,6 @@ TRINO_CONFIG = {
 
 QUERY_DIR = 'queries'
 OUTPUT_DIR = 'output'
-OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'mr6_results.csv')
-METADATA_FILE = os.path.join(OUTPUT_DIR, 'mr6_metadata.json')
-STATS_FILE = os.path.join(OUTPUT_DIR, 'mr6_stats.json')
 ITERATIONS = 5
 WARMUP_RUNS = 1
 
@@ -205,19 +203,23 @@ def get_query_stats_from_api(query_id):
                     stage_stats = output_stage['stageStats']
                     peak_memory = (stage_stats.get('peakUserMemoryReservation') or
                                  stage_stats.get('peakMemoryReservation'))
-            
+
             peak_memory_mb = parse_memory_to_mb(peak_memory) if peak_memory else 0
-            
+
             # Input Rows
-            input_rows = (stats.get('physicalInputRows') or 
+            input_rows = (stats.get('physicalInputRows') or
                          stats.get('processedInputRows') or
                          stats.get('rawInputRows') or
                          stats.get('inputRows') or
                          0)
-            
+
             # Output Rows
             output_rows = stats.get('outputRows') or stats.get('completedRows') or 0
-            
+
+            # Spill detection
+            spilled_data_size = stats.get('spilledDataSize', '0B')
+            spilled_mb = parse_memory_to_mb(spilled_data_size) if spilled_data_size else 0
+
             return {
                 'query_id': query_id,
                 'state': data.get('state', 'UNKNOWN'),
@@ -229,6 +231,7 @@ def get_query_stats_from_api(query_id):
                 'peak_memory_mb': peak_memory_mb,
                 'physical_input_rows': input_rows,
                 'output_rows': output_rows,
+                'spilled_mb': spilled_mb,
                 'source': 'REST API'
             }
         else:
@@ -254,17 +257,21 @@ def measure_query_execution(cursor, sql_query, input_rows):
     
     try:
         cursor.execute(sql_query)
-        
+
         # Extract query ID from cursor
         if hasattr(cursor, '_query') and hasattr(cursor._query, 'query_id'):
             query_id = cursor._query.query_id
-        
+
         rows = cursor.fetchall()
         row_count = len(rows)
         status = "SUCCESS"
-        
+
     except Exception as e:
-        status = f"ERROR: {e}"
+        err_str = str(e)
+        if "EXCEEDED_MEMORY_LIMIT" in err_str:
+            status = "OOM"
+        else:
+            status = f"ERROR: {e}"
         row_count = 0
         rows = []
     
@@ -278,7 +285,7 @@ def measure_query_execution(cursor, sql_query, input_rows):
     if server_stats:
         cpu_seconds = server_stats.get('cpu_time_sec', 0)
         peak_memory_mb = server_stats.get('peak_memory_mb', 0)
-        
+
         # For input rows: use server value if available and > 0, otherwise use table estimate
         server_input_rows = server_stats.get('physical_input_rows')
         if server_input_rows and server_input_rows > 0:
@@ -286,13 +293,18 @@ def measure_query_execution(cursor, sql_query, input_rows):
         else:
             # Fallback to table size estimate
             processed_rows = input_rows or 0
-        
+
         server_elapsed = server_stats.get('elapsed_time_sec', 0)
         stats_source = server_stats.get('source', 'unknown')
-        
+
         # Use server elapsed time if available, otherwise client time
         runtime = server_elapsed if server_elapsed > 0 else client_duration
-        
+
+        # Spill warning
+        spilled_mb = server_stats.get('spilled_mb', 0)
+        if spilled_mb > 0:
+            print(f"      [WARN] Spill detected: {spilled_mb:.1f}MB spilled to disk")
+
         # Convert 0 to None for cleaner output
         if cpu_seconds == 0:
             cpu_seconds = None
@@ -325,10 +337,18 @@ def measure_query_execution(cursor, sql_query, input_rows):
         'server_stats': server_stats
     }
 
-def run_benchmark():
-    # Ensure output directory exists
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    
+def run_benchmark(dataset_size=None):
+    # Set output paths (scalability run vs. standard run)
+    if dataset_size is not None:
+        output_dir = os.path.join(OUTPUT_DIR, 'scalability', f'n_{dataset_size}')
+    else:
+        output_dir = OUTPUT_DIR
+    output_file = os.path.join(output_dir, 'mr6_results.csv')
+    metadata_file = os.path.join(output_dir, 'mr6_metadata.json')
+    stats_file = os.path.join(output_dir, 'mr6_stats.json')
+
+    os.makedirs(output_dir, exist_ok=True)
+
     # Connection to Trino
     conn = trino.dbapi.connect(**TRINO_CONFIG)
     cur = conn.cursor()
@@ -341,6 +361,8 @@ def run_benchmark():
     print(f"System: {metadata.get('system')}")
     print(f"Trino version: {metadata.get('trino_version')}")
     print(f"Cluster nodes: {metadata['trino_config'].get('cluster_nodes', 'N/A')}")
+    if dataset_size is not None:
+        print(f"Dataset size: {dataset_size:,} rows")
     print(f"Warmup runs: {WARMUP_RUNS}")
     print(f"Measurement iterations: {ITERATIONS}")
     print()
@@ -377,7 +399,9 @@ def run_benchmark():
     
     # Save metadata
     import json
-    with open(METADATA_FILE, 'w') as f:
+    if dataset_size is not None:
+        metadata['dataset_size'] = dataset_size
+    with open(metadata_file, 'w') as f:
         json.dump(metadata, f, indent=2)
 
     # Get baseline input size
@@ -386,12 +410,13 @@ def run_benchmark():
     print()
 
     # Prepare CSV
-    with open(OUTPUT_FILE, 'w', newline='') as f:
+    with open(output_file, 'w', newline='') as f:
         writer = csv.writer(f)
-        
+
         writer.writerow([
             'system',
             'query_pattern',
+            'dataset_size',
             'iteration',
             'runtime_sec',
             'client_runtime_sec',
@@ -466,6 +491,7 @@ def run_benchmark():
                 writer.writerow([
                     'trino',
                     q_file,
+                    dataset_size if dataset_size is not None else total_table_rows,
                     i+1,
                     metrics['runtime_sec'],
                     metrics['client_runtime_sec'],
@@ -497,13 +523,13 @@ def run_benchmark():
                 print(f"  CPU Time (server):")
                 print(f"    Median: {statistics.median(cpu_times):.2f}s")
             else:
-                print(f"  CPU Time: ⚠ Not available")
+                print(f"  CPU Time: [!] Not available")
                 
             if memories:
                 print(f"  Peak Memory (server):")
                 print(f"    Median: {statistics.median(memories):.1f}MB")
             else:
-                print(f"  Peak Memory: ⚠ Not available")
+                print(f"  Peak Memory: [!] Not available")
             
             all_stats[q_file] = {
                 'runtimes': runtimes,
@@ -524,15 +550,19 @@ def run_benchmark():
             'memory_median': statistics.median(stats['memories']) if stats['memories'] else None,
         }
     
-    with open(STATS_FILE, 'w') as f:
+    with open(stats_file, 'w') as f:
         json.dump(stats_summary, f, indent=2)
 
     print("=" * 70)
     print("[OK] Benchmark completed!")
-    print(f"[OK] Results: {OUTPUT_FILE}")
-    print(f"[OK] Metadata: {METADATA_FILE}")
-    print(f"[OK] Statistics: {STATS_FILE}")
+    print(f"[OK] Results: {output_file}")
+    print(f"[OK] Metadata: {metadata_file}")
+    print(f"[OK] Statistics: {stats_file}")
     print("=" * 70)
 
 if __name__ == "__main__":
-    run_benchmark()
+    parser = argparse.ArgumentParser(description='Trino MATCH_RECOGNIZE benchmark')
+    parser.add_argument('--dataset-size', type=int, default=None,
+                        help='Dataset size (rows). Used to set output path and label CSV rows.')
+    args = parser.parse_args()
+    run_benchmark(dataset_size=args.dataset_size)
