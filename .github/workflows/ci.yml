@@ -81,6 +81,7 @@ jobs:
 
       - name: Patch Trino JVM config for CI (4G heap instead of 12G)
         run: |
+          sed -i 's/\r$//' etc/trino/jvm.config etc/trino/config.properties
           sed -i 's/-Xmx12G/-Xmx4G/' etc/trino/jvm.config
           sed -i 's/query.max-memory=8GB/query.max-memory=3GB/' etc/trino/config.properties
           sed -i 's/query.max-memory-per-node=8GB/query.max-memory-per-node=3GB/' etc/trino/config.properties
