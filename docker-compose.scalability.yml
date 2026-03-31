@@ -3,9 +3,8 @@
 # Keeps original docker-compose.yml untouched.
 #
 # Key differences from original:
-#   - Trino: mem_limit 12GB, uses jvm.scalability.config (Xmx8G) + config.scalability.properties
-#           (query.max-memory=6GB) — fits in a 16GB Codespace alongside PG
-#   - Postgres: mem_limit 6GB, uses init-scripts-scalability/ for per-size data loading
+#   - Trino: memory limit 20GB, custom JVM + config for memory management
+#   - Postgres: memory limit 8GB, uses init-scripts-scalability/ for per-size data loading
 #   - Benchmark: same as original
 
 services:
@@ -16,9 +15,9 @@ services:
       - "8081:8080"
     volumes:
       - ./catalog:/etc/trino/catalog
-      - ./etc/trino/config.scalability.properties:/etc/trino/config.properties
-      - ./etc/trino/jvm.scalability.config:/etc/trino/jvm.config
-    mem_limit: 12g
+      - ./etc/trino/config.properties:/etc/trino/config.properties
+      - ./etc/trino/jvm.config:/etc/trino/jvm.config
+    mem_limit: 20g
     depends_on:
       database:
         condition: service_healthy
@@ -41,7 +40,7 @@ services:
     volumes:
       - .:/project_data
       - ./init-scripts-scalability:/docker-entrypoint-initdb.d
-    mem_limit: 6g
+    mem_limit: 8g
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U trino" ]
       interval: 5s
