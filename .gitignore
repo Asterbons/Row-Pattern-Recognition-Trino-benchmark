@@ -3,7 +3,7 @@
 output/
 CLAUDE.md
 output_files/
-datasets/
+/datasets/
 implementation_plan.md.resolved
 Generator.zip
 summary.md
