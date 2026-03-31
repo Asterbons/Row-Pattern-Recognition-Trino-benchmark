@@ -1,0 +1,435 @@
+{
+"metadata": {
+"system": "Oracle",
+"version": "Oracle Database 21c Express Edition (21.3.0.0.0)",
+"environment": "rprdps3",
+"cpu_cores": 2,
+"runs_per_query": 5,
+"timestamp": "2026-03-28",
+"units": {
+"runtime": "seconds",
+"throughput": "rows_selected/runtime_median",
+"cpu": "seconds"
+}
+},
+
+"1k": {
+"dataset_rows": 1000,
+"01_overlap_default.sql": {
+"runtime_q1": 0.03,
+"runtime_median": 0.03,
+"runtime_q3": 0.035,
+"throughput_rows_s": 16666.67,
+"cpu_median": 0.02,
+"rows_selected": 500
+},
+"02_overlap.sql": {
+"runtime_q1": 0.03,
+"runtime_median": 0.03,
+"runtime_q3": 0.085,
+"throughput_rows_s": 33300.0,
+"cpu_median": 0.01,
+"rows_selected": 999
+},
+"03_greedy.sql": {
+"runtime_q1": 0.13,
+"runtime_median": 0.13,
+"runtime_q3": 0.14,
+"throughput_rows_s": 7676.92,
+"cpu_median": 0.12,
+"rows_selected": 998
+},
+"03_reluctant.sql": {
+"runtime_q1": 0.025,
+"runtime_median": 0.03,
+"runtime_q3": 0.075,
+"throughput_rows_s": 33333.33,
+"cpu_median": 0.02,
+"rows_selected": 1000
+},
+"04_define.sql": {
+"runtime_q1": 0.03,
+"runtime_median": 0.03,
+"runtime_q3": 0.03,
+"throughput_rows_s": 31966.67,
+"cpu_median": 0.02,
+"rows_selected": 959
+},
+"05_ONE ROW PER MATCH.sql": {
+"runtime_q1": 0.025,
+"runtime_median": 0.03,
+"runtime_q3": 0.03,
+"throughput_rows_s": 12500.0,
+"cpu_median": 0.02,
+"rows_selected": 375
+},
+"06_ALL ROW PER MATCH.sql": {
+"runtime_q1": 0.03,
+"runtime_median": 0.03,
+"runtime_q3": 0.035,
+"throughput_rows_s": 33333.33,
+"cpu_median": 0.02,
+"rows_selected": 1000
+},
+"07_SUBSET.sql": {
+"runtime_q1": 0.02,
+"runtime_median": 0.03,
+"runtime_q3": 0.03,
+"throughput_rows_s": 11100.0,
+"cpu_median": 0.02,
+"rows_selected": 333
+},
+"08_WITHIN.sql": {
+"runtime_q1": null,
+"runtime_median": null,
+"runtime_q3": null,
+"throughput_rows_s": null,
+"cpu_median": null,
+"rows_selected": null
+},
+"09_Nullwerte.sql": {
+"runtime_q1": 0.025,
+"runtime_median": 0.03,
+"runtime_q3": 0.3,
+"throughput_rows_s": 17033.33,
+"cpu_median": 0.01,
+"rows_selected": 511
+}
+},
+
+"10k": {
+"dataset_rows": 10000,
+"01_overlap_default.sql": {
+"runtime_q1": 0.05,
+"runtime_median": 0.05,
+"runtime_q3": 0.085,
+"throughput_rows_s": 100000.0,
+"cpu_median": 0.03,
+"rows_selected": 5000
+},
+"02_overlap.sql": {
+"runtime_q1": 0.045,
+"runtime_median": 0.06,
+"runtime_q3": 0.07,
+"throughput_rows_s": 166650.0,
+"cpu_median": 0.03,
+"rows_selected": 9999
+},
+"03_greedy.sql": {
+"runtime_q1": 10.28,
+"runtime_median": 10.37,
+"runtime_q3": 10.58,
+"throughput_rows_s": 964.13,
+"cpu_median": 10.28,
+"rows_selected": 9998
+},
+"03_reluctant.sql": {
+"runtime_q1": 0.075,
+"runtime_median": 0.10,
+"runtime_q3": 0.11,
+"throughput_rows_s": 100000.0,
+"cpu_median": 0.03,
+"rows_selected": 10000
+},
+"04_define.sql": {
+"runtime_q1": 0.09,
+"runtime_median": 0.11,
+"runtime_q3": 0.21,
+"throughput_rows_s": 87581.82,
+"cpu_median": 0.04,
+"rows_selected": 9634
+},
+"05_ONE ROW PER MATCH.sql": {
+"runtime_q1": 0.04,
+"runtime_median": 0.07,
+"runtime_q3": 0.255,
+"throughput_rows_s": 52685.71,
+"cpu_median": 0.03,
+"rows_selected": 3688
+},
+"06_ALL ROW PER MATCH.sql": {
+"runtime_q1": 0.07,
+"runtime_median": 0.08,
+"runtime_q3": 0.10,
+"throughput_rows_s": 124987.5,
+"cpu_median": 0.04,
+"rows_selected": 9999
+},
+"07_SUBSET.sql": {
+"runtime_q1": 0.04,
+"runtime_median": 0.04,
+"runtime_q3": 0.04,
+"throughput_rows_s": 83325.0,
+"cpu_median": 0.02,
+"rows_selected": 3333
+},
+"08_WITHIN.sql": {
+"runtime_q1": null,
+"runtime_median": null,
+"runtime_q3": null,
+"throughput_rows_s": null,
+"cpu_median": null,
+"rows_selected": null
+},
+"09_Nullwerte.sql": {
+"runtime_q1": 0.04,
+"runtime_median": 0.04,
+"runtime_q3": 0.04,
+"throughput_rows_s": 125550.0,
+"cpu_median": 0.03,
+"rows_selected": 5022
+}
+},
+
+"100k": {
+"dataset_rows": 100000,
+"01_overlap_default.sql": {
+"runtime_q1": 0.165,
+"runtime_median": 0.17,
+"runtime_q3": 0.19,
+"throughput_rows_s": 294117.65,
+"cpu_median": 0.09,
+"rows_selected": 50000
+},
+"02_overlap.sql": {
+"runtime_q1": 0.23,
+"runtime_median": 0.25,
+"runtime_q3": 0.27,
+"throughput_rows_s": 399996.0,
+"cpu_median": 0.13,
+"rows_selected": 99999
+},
+"03_greedy.sql": {
+"runtime_q1": 0.205,
+"runtime_median": 0.32,
+"runtime_q3": 0.335,
+"throughput_rows_s": 140640.63,
+"cpu_median": 0.16,
+"rows_selected": 45005
+},
+"03_reluctant.sql": {
+"runtime_q1": 0.24,
+"runtime_median": 0.27,
+"runtime_q3": 0.415,
+"throughput_rows_s": 370370.37,
+"cpu_median": 0.16,
+"rows_selected": 100000
+},
+"04_define.sql": {
+"runtime_q1": 0.26,
+"runtime_median": 0.26,
+"runtime_q3": 0.29,
+"throughput_rows_s": 218403.85,
+"cpu_median": 0.21,
+"rows_selected": 56785
+},
+"05_ONE ROW PER MATCH.sql": {
+"runtime_q1": 0.145,
+"runtime_median": 0.15,
+"runtime_q3": 0.185,
+"throughput_rows_s": 240033.33,
+"cpu_median": 0.12,
+"rows_selected": 36005
+},
+"06_ALL ROW PER MATCH.sql": {
+"runtime_q1": 0.32,
+"runtime_median": 0.33,
+"runtime_q3": 0.365,
+"throughput_rows_s": 303030.30,
+"cpu_median": 0.24,
+"rows_selected": 100000
+},
+"07_SUBSET.sql": {
+"runtime_q1": 0.145,
+"runtime_median": 0.19,
+"runtime_q3": 0.24,
+"throughput_rows_s": 1754384.21,
+"cpu_median": 0.10,
+"rows_selected": 333333
+},
+"08_WITHIN.sql": {
+"runtime_q1": null,
+"runtime_median": null,
+"runtime_q3": null,
+"throughput_rows_s": null,
+"cpu_median": null,
+"rows_selected": null
+},
+"09_Nullwerte.sql": {
+"runtime_q1": 0.17,
+"runtime_median": 0.19,
+"runtime_q3": 0.19,
+"throughput_rows_s": 258394.74,
+"cpu_median": 0.11,
+"rows_selected": 49095
+}
+},
+
+"1M": {
+"dataset_rows": 1000000,
+"01_overlap_default.sql": {
+"runtime_q1": 0.90,
+"runtime_median": 1.01,
+"runtime_q3": 1.12,
+"throughput_rows_s": 495049.50,
+"cpu_median": 1.05,
+"rows_selected": 500000
+},
+"02_overlap.sql": {
+"runtime_q1": 1.41,
+"runtime_median": 1.46,
+"runtime_q3": 2.00,
+"throughput_rows_s": 684930.82,
+"cpu_median": 1.93,
+"rows_selected": 999999
+},
+"03_greedy.sql": {
+"runtime_q1": 1.64,
+"runtime_median": 1.67,
+"runtime_q3": 1.79,
+"throughput_rows_s": 269398.20,
+"cpu_median": 1.99,
+"rows_selected": 449895
+},
+"03_reluctant.sql": {
+"runtime_q1": 1.54,
+"runtime_median": 1.72,
+"runtime_q3": 1.76,
+"throughput_rows_s": 581395.35,
+"cpu_median": 1.89,
+"rows_selected": 1000000
+},
+"04_define.sql": {
+"runtime_q1": 2.24,
+"runtime_median": 2.31,
+"runtime_q3": 2.44,
+"throughput_rows_s": 245609.96,
+"cpu_median": 2.20,
+"rows_selected": 567359
+},
+"05_ONE ROW PER MATCH.sql": {
+"runtime_q1": 1.15,
+"runtime_median": 1.26,
+"runtime_q3": 1.34,
+"throughput_rows_s": 294626.19,
+"cpu_median": 1.36,
+"rows_selected": 371229
+},
+"06_ALL ROW PER MATCH.sql": {
+"runtime_q1": 24.14,
+"runtime_median": 24.77,
+"runtime_q3": 24.77,
+"throughput_rows_s": 40371.13,
+"cpu_median": 31.11,
+"rows_selected": 999993
+},
+"07_SUBSET.sql": {
+"runtime_q1": 0.92,
+"runtime_median": 0.97,
+"runtime_q3": 1.03,
+"throughput_rows_s": 343642.27,
+"cpu_median": 1.02,
+"rows_selected": 333333
+},
+"08_WITHIN.sql": {
+"runtime_q1": null,
+"runtime_median": null,
+"runtime_q3": null,
+"throughput_rows_s": null,
+"cpu_median": null,
+"rows_selected": null
+},
+"09_Nullwerte.sql": {
+"runtime_q1": 1.27,
+"runtime_median": 1.28,
+"runtime_q3": 1.31,
+"throughput_rows_s": 439900.78,
+"cpu_median": 1.38,
+"rows_selected": 563073
+}
+},
+
+"10M": {
+"dataset_rows": 10000000,
+"01_overlap_default.sql": {
+"runtime_q1": 71.21,
+"runtime_median": 75.15,
+"runtime_q3": 75.63,
+"throughput_rows_s": 66533.57,
+"cpu_median": 12.78,
+"rows_selected": 4999998
+},
+"02_overlap.sql": {
+"runtime_q1": 77.30,
+"runtime_median": 79.85,
+"runtime_q3": 84.72,
+"throughput_rows_s": 125234.75,
+"cpu_median": 18.57,
+"rows_selected": 9999995
+},
+"03_greedy.sql": {
+"runtime_q1": 69.97,
+"runtime_median": 70.18,
+"runtime_q3": 70.70,
+"throughput_rows_s": 53430.36,
+"cpu_median": 17.62,
+"rows_selected": 3749743
+},
+"03_reluctant.sql": {
+"runtime_q1": 65.78,
+"runtime_median": 67.60,
+"runtime_q3": 67.66,
+"throughput_rows_s": 147928.93,
+"cpu_median": 18.09,
+"rows_selected": 9999996
+},
+"04_define.sql": {
+"runtime_q1": 121.65,
+"runtime_median": 122.97,
+"runtime_q3": 130.45,
+"throughput_rows_s": 44764.26,
+"cpu_median": 24.82,
+"rows_selected": 5504662
+},
+"05_ONE ROW PER MATCH.sql": {
+"runtime_q1": 69.09,
+"runtime_median": 73.27,
+"runtime_q3": 73.34,
+"throughput_rows_s": 52484.51,
+"cpu_median": 14.72,
+"rows_selected": 3845540
+},
+"06_ALL ROW PER MATCH.sql": {
+"runtime_q1": 199.94,
+"runtime_median": 201.15,
+"runtime_q3": 214.54,
+"throughput_rows_s": 49713.96,
+"cpu_median": 27.27,
+"rows_selected": 9999964
+},
+"07_SUBSET.sql": {
+"runtime_q1": 61.91,
+"runtime_median": 69.74,
+"runtime_q3": 74.04,
+"throughput_rows_s": 47796.56,
+"cpu_median": 12.17,
+"rows_selected": 3333332
+},
+"08_WITHIN.sql": {
+"runtime_q1": null,
+"runtime_median": null,
+"runtime_q3": null,
+"throughput_rows_s": null,
+"cpu_median": null,
+"rows_selected": null
+},
+"09_Nullwerte.sql": {
+"runtime_q1": 62.78,
+"runtime_median": 69.44,
+"runtime_q3": 72.47,
+"throughput_rows_s": 72664.17,
+"cpu_median": 14.33,
+"rows_selected": 5045800
+}
+}
+}

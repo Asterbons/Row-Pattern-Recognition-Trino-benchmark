@@ -1,0 +1,15 @@
+Features/ Systeme;Trino (Link);Flink (Link);Oracle (Link);DuckDB
+PARTION BY;ja;ja;ja;
+ORDER BY;ja;ja;ja;
+PATTERN;ja;teilweise (unterstützt nicht Pattern- Gruppen wie (A (BC)+);ja;
+DEFINE;ja;ja;ja;
+MEASURES;ja;ja;ja;
+AFTER MATCH SKIP;teilweise (AFTER MATCH SKIP FIRST<variable>: Laufzeitfehler, wenn die Variable die erste im Pattern ist);"teilweise; SKIP TO FIRST variable  führt zu Endlosschleife";"ja, unterstützt verschiedene SKIP-Optionen; Fehler möglich (""variable is not bounded""), wenn Zielvariable im Match nicht gebunden ist";
+ALL ROWS PER MATCH;ja;nein;ja;
+ONE ROW PER MATCH;ja;ja;ja;
+CLASSIFIER();ja;nein;ja;
+MATCH NUMBER();ja;nein;ja;
+WITHIN;nein;nein;nein;
+SUBSET;ja;nein;ja;
+FIRST() / LAST();ja;ja;ja;
+PREV() / NEXT();ja;ja (aber nur mit logischen Offsets) ;ja;

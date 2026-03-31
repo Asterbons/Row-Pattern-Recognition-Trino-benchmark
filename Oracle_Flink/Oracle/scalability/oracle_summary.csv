@@ -1,0 +1,51 @@
+query_pattern,dataset_size,median_runtime_sec,median_throughput,has_oom
+01_overlap_default.sql,1000,0.03,16666.67,False
+01_overlap_default.sql,10000,0.05,100000.0,False
+01_overlap_default.sql,100000,0.17,294117.65,False
+01_overlap_default.sql,1000000,1.01,495049.5,False
+01_overlap_default.sql,10000000,75.15,66533.57,False
+02_overlap.sql,1000,0.03,33300.0,False
+02_overlap.sql,10000,0.06,166650.0,False
+02_overlap.sql,100000,0.25,399996.0,False
+02_overlap.sql,1000000,1.46,684930.82,False
+02_overlap.sql,10000000,79.85,125234.75,False
+03_greedy.sql,1000,0.13,7676.92,False
+03_greedy.sql,10000,10.37,964.13,False
+03_greedy.sql,100000,0.32,140640.63,False
+03_greedy.sql,1000000,1.67,269398.2,False
+03_greedy.sql,10000000,70.18,53430.36,False
+03_reluctant.sql,1000,0.03,33333.33,False
+03_reluctant.sql,10000,0.1,100000.0,False
+03_reluctant.sql,100000,0.27,370370.37,False
+03_reluctant.sql,1000000,1.72,581395.35,False
+03_reluctant.sql,10000000,67.6,147928.93,False
+04_define.sql,1000,0.03,31966.67,False
+04_define.sql,10000,0.11,87581.82,False
+04_define.sql,100000,0.26,218403.85,False
+04_define.sql,1000000,2.31,245609.96,False
+04_define.sql,10000000,122.97,44764.26,False
+05_ONE ROW PER MATCH.sql,1000,0.03,12500.0,False
+05_ONE ROW PER MATCH.sql,10000,0.07,52685.71,False
+05_ONE ROW PER MATCH.sql,100000,0.15,240033.33,False
+05_ONE ROW PER MATCH.sql,1000000,1.26,294626.19,False
+05_ONE ROW PER MATCH.sql,10000000,73.27,52484.51,False
+06_ALL ROW PER MATCH.sql,1000,0.03,33333.33,False
+06_ALL ROW PER MATCH.sql,10000,0.08,124987.5,False
+06_ALL ROW PER MATCH.sql,100000,0.33,303030.3,False
+06_ALL ROW PER MATCH.sql,1000000,24.77,40371.13,False
+06_ALL ROW PER MATCH.sql,10000000,201.15,49713.96,False
+07_SUBSET.sql,1000,0.03,11100.0,False
+07_SUBSET.sql,10000,0.04,83325.0,False
+07_SUBSET.sql,100000,0.19,1754384.21,False
+07_SUBSET.sql,1000000,0.97,343642.27,False
+07_SUBSET.sql,10000000,69.74,47796.56,False
+08_WITHIN.sql,1000,,,True
+08_WITHIN.sql,10000,,,True
+08_WITHIN.sql,100000,,,True
+08_WITHIN.sql,1000000,,,True
+08_WITHIN.sql,10000000,,,True
+09_Nullwerte.sql,1000,0.03,17033.33,False
+09_Nullwerte.sql,10000,0.04,125550.0,False
+09_Nullwerte.sql,100000,0.19,258394.74,False
+09_Nullwerte.sql,1000000,1.28,439900.78,False
+09_Nullwerte.sql,10000000,69.44,72664.17,False

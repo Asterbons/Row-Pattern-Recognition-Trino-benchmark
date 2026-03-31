@@ -1,0 +1,87 @@
+{
+  "metadata": {
+    "system": "Flink",
+    "version": "Version: 1.19.1, Commit ID: 5edb5a9",
+    "hostname": "rprdps2",
+    "cpu_model": "QEMU Virtual CPU version 2.5+",
+    "cpu_cores": 4,
+    "total_ram_mb": 32097,
+    "os_kernel": "6.8.0-86-generic",
+    "dataset_rows": 51,
+    "runs_per_query": 7,
+    "timestamp": "2026-03-31T17:25:16Z"
+  },
+  "results": [
+    {
+      "query": "01_overlap_default",
+      "elapsed_s":     {"min":4.732,"q1":4.744,"median":4.824,"q3":4.856,"max":5.037,"mean":4.84},
+      "cpu_s":         {"min":7.9,"q1":7.91,"median":7.98,"q3":8.08,"max":8.09,"mean":7.99},
+      "peak_memory_mb":{"min":272.39,"q1":276.95,"median":289.76,"q3":292.37,"max":294.3,"mean":285.98},
+      "throughput_rows_s": 10.5
+    }
+,
+    {
+      "query": "02_overlap",
+      "elapsed_s":     {"min":4.753,"q1":4.813,"median":4.895,"q3":5.2,"max":5.365,"mean":5.00},
+      "cpu_s":         {"min":7.62,"q1":7.8,"median":7.97,"q3":8.04,"max":8.04,"mean":7.92},
+      "peak_memory_mb":{"min":279.6,"q1":282.26,"median":286.91,"q3":293.54,"max":296.93,"mean":288.12},
+      "throughput_rows_s": 10.4
+    }
+,
+    {
+      "query": "03_greedy",
+      "elapsed_s":     {"min":4.809,"q1":4.82,"median":4.893,"q3":4.925,"max":5.301,"mean":4.93},
+      "cpu_s":         {"min":7.92,"q1":7.97,"median":8.09,"q3":8.31,"max":8.36,"mean":8.13},
+      "peak_memory_mb":{"min":274.79,"q1":277.07,"median":291.12,"q3":293.0,"max":295.25,"mean":286.34},
+      "throughput_rows_s": 10.4
+    }
+,
+    {
+      "query": "03_reluctant",
+      "elapsed_s":     {"min":4.709,"q1":4.84,"median":4.973,"q3":5.381,"max":5.395,"mean":5.09},
+      "cpu_s":         {"min":7.82,"q1":7.84,"median":8.08,"q3":8.22,"max":8.23,"mean":8.04},
+      "peak_memory_mb":{"min":278.08,"q1":283.03,"median":286.21,"q3":294.53,"max":303.14,"mean":288.72},
+      "throughput_rows_s": 10.2
+    }
+,
+    {
+      "query": "04_define",
+      "elapsed_s":     {"min":4.748,"q1":4.891,"median":4.929,"q3":5.334,"max":6.295,"mean":5.16},
+      "cpu_s":         {"min":7.74,"q1":7.86,"median":8.0,"q3":8.06,"max":8.11,"mean":7.97},
+      "peak_memory_mb":{"min":275.68,"q1":284.3,"median":288.0,"q3":296.06,"max":303.45,"mean":288.90},
+      "throughput_rows_s": 10.3
+    }
+,
+    {
+      "query": "05_ONE_ROW_PER_MATCH",
+      "elapsed_s":     {"min":4.643,"q1":4.793,"median":5.071,"q3":5.449,"max":5.456,"mean":5.08},
+      "cpu_s":         {"min":7.72,"q1":7.75,"median":7.87,"q3":8.04,"max":8.21,"mean":7.92},
+      "peak_memory_mb":{"min":263.78,"q1":267.3,"median":277.66,"q3":280.62,"max":309.66,"mean":279.19},
+      "throughput_rows_s": 10.0
+    }
+,
+    {
+      "query": "06_ALL_ROWS_PER_MATCH",
+      "elapsed_s":     {"min":4.691,"q1":4.762,"median":4.819,"q3":4.996,"max":5.101,"mean":4.86},
+      "cpu_s":         {"min":7.66,"q1":7.66,"median":7.84,"q3":7.95,"max":8.06,"mean":7.82},
+      "peak_memory_mb":{"min":275.12,"q1":281.98,"median":289.49,"q3":294.48,"max":295.6,"mean":288.15},
+      "throughput_rows_s": 10.5
+    }
+,
+    {
+      "query": "07_SUBSET_workaround",
+      "elapsed_s":     {"min":4.765,"q1":4.78,"median":4.852,"q3":5.13,"max":5.193,"mean":4.94},
+      "cpu_s":         {"min":7.57,"q1":7.71,"median":8.07,"q3":8.12,"max":8.39,"mean":7.98},
+      "peak_memory_mb":{"min":275.1,"q1":280.3,"median":281.87,"q3":285.55,"max":305.96,"mean":284.66},
+      "throughput_rows_s": 10.5
+    }
+,
+    {
+      "query": "08_WITHIN",
+      "elapsed_s":     {"min":4.901,"q1":4.902,"median":4.975,"q3":5.016,"max":5.022,"mean":4.97},
+      "cpu_s":         {"min":7.82,"q1":7.9,"median":8.12,"q3":8.15,"max":8.22,"mean":8.05},
+      "peak_memory_mb":{"min":275.5,"q1":278.34,"median":289.75,"q3":300.03,"max":305.57,"mean":289.98},
+      "throughput_rows_s": 10.2
+    }
+  ]
+}
