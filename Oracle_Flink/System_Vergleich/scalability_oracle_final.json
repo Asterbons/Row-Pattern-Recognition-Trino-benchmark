@@ -1,0 +1,374 @@
+{
+  "benchmark_type": "scalability",
+  "system": "Oracle",
+  "timestamp": "2026-03-28",
+  "dataset_sizes": [
+    1000,
+    10000,
+    100000,
+    1000000,
+    10000000
+  ],
+  "completed_sizes": [
+    1000,
+    10000,
+    100000,
+    1000000,
+    10000000
+  ],
+  "query_scalability": {
+    "01_overlap_default": {
+      "dataset_sizes": [
+        1000,
+        10000,
+        100000,
+        1000000,
+        10000000
+      ],
+      "elapsed_median": [
+        0.03,
+        0.05,
+        0.17,
+        1.01,
+        75.15
+      ],
+      "cpu_median": [
+        0.02,
+        0.03,
+        0.09,
+        1.05,
+        12.78
+      ],
+      "memory_median": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "throughput_median": [
+        16666.67,
+        100000.0,
+        294117.65,
+        495049.5,
+        66533.57
+      ]
+    },
+    "02_overlap": {
+      "dataset_sizes": [
+        1000,
+        10000,
+        100000,
+        1000000,
+        10000000
+      ],
+      "elapsed_median": [
+        0.03,
+        0.06,
+        0.25,
+        1.46,
+        79.85
+      ],
+      "cpu_median": [
+        0.01,
+        0.03,
+        0.13,
+        1.93,
+        18.57
+      ],
+      "memory_median": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "throughput_median": [
+        33300.0,
+        166650.0,
+        399996.0,
+        684930.82,
+        125234.75
+      ]
+    },
+    "03_greedy": {
+      "dataset_sizes": [
+        1000,
+        10000,
+        100000,
+        1000000,
+        10000000
+      ],
+      "elapsed_median": [
+        0.13,
+        10.37,
+        0.32,
+        1.67,
+        70.18
+      ],
+      "cpu_median": [
+        0.12,
+        10.28,
+        0.16,
+        1.99,
+        17.62
+      ],
+      "memory_median": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "throughput_median": [
+        7676.92,
+        964.13,
+        140640.63,
+        269398.2,
+        53430.36
+      ]
+    },
+    "03_reluctant": {
+      "dataset_sizes": [
+        1000,
+        10000,
+        100000,
+        1000000,
+        10000000
+      ],
+      "elapsed_median": [
+        0.03,
+        0.1,
+        0.27,
+        1.72,
+        67.6
+      ],
+      "cpu_median": [
+        0.02,
+        0.03,
+        0.16,
+        1.89,
+        18.09
+      ],
+      "memory_median": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "throughput_median": [
+        33333.33,
+        100000.0,
+        370370.37,
+        581395.35,
+        147928.93
+      ]
+    },
+    "04_define": {
+      "dataset_sizes": [
+        1000,
+        10000,
+        100000,
+        1000000,
+        10000000
+      ],
+      "elapsed_median": [
+        0.03,
+        0.11,
+        0.26,
+        2.31,
+        122.97
+      ],
+      "cpu_median": [
+        0.02,
+        0.04,
+        0.21,
+        2.2,
+        24.82
+      ],
+      "memory_median": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "throughput_median": [
+        31966.67,
+        87581.82,
+        218403.85,
+        245609.96,
+        44764.26
+      ]
+    },
+    "05_ONE_ROW_PER_MATCH": {
+      "dataset_sizes": [
+        1000,
+        10000,
+        100000,
+        1000000,
+        10000000
+      ],
+      "elapsed_median": [
+        0.03,
+        0.07,
+        0.15,
+        1.26,
+        73.27
+      ],
+      "cpu_median": [
+        0.02,
+        0.03,
+        0.12,
+        1.36,
+        14.72
+      ],
+      "memory_median": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "throughput_median": [
+        12500.0,
+        52685.71,
+        240033.33,
+        294626.19,
+        52484.51
+      ]
+    },
+    "06_ALL_ROWS_PER_MATCH": {
+      "dataset_sizes": [
+        1000,
+        10000,
+        100000,
+        1000000,
+        10000000
+      ],
+      "elapsed_median": [
+        0.03,
+        0.08,
+        0.33,
+        24.77,
+        201.15
+      ],
+      "cpu_median": [
+        0.02,
+        0.04,
+        0.24,
+        31.11,
+        27.27
+      ],
+      "memory_median": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "throughput_median": [
+        33333.33,
+        124987.5,
+        303030.3,
+        40371.13,
+        49713.96
+      ]
+    },
+    "07_SUBSET_workaround": {
+      "dataset_sizes": [
+        1000,
+        10000,
+        100000,
+        1000000,
+        10000000
+      ],
+      "elapsed_median": [
+        0.03,
+        0.04,
+        0.19,
+        0.97,
+        69.74
+      ],
+      "cpu_median": [
+        0.02,
+        0.02,
+        0.1,
+        1.02,
+        12.17
+      ],
+      "memory_median": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "throughput_median": [
+        11100.0,
+        83325.0,
+        1754384.21,
+        343642.27,
+        47796.56
+      ]
+    },
+    "08_WITHIN": {
+      "dataset_sizes": [],
+      "elapsed_median": [],
+      "cpu_median": [],
+      "memory_median": [],
+      "throughput_median": []
+    },
+    "09_Nullwerte": {
+      "dataset_sizes": [
+        1000,
+        10000,
+        100000,
+        1000000,
+        10000000
+      ],
+      "elapsed_median": [
+        0.03,
+        0.04,
+        0.19,
+        1.28,
+        69.44
+      ],
+      "cpu_median": [
+        0.01,
+        0.03,
+        0.11,
+        1.38,
+        14.33
+      ],
+      "memory_median": [
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "throughput_median": [
+        17033.33,
+        125550.0,
+        258394.74,
+        439900.78,
+        72664.17
+      ]
+    }
+  },
+  "metadata": {
+    "system": "Oracle",
+    "version": "Oracle Database 21c Express Edition (21.3.0.0.0)",
+    "environment": "rprdps3",
+    "cpu_cores": 2,
+    "runs_per_query": 5,
+    "timestamp": "2026-03-28",
+    "units": {
+      "runtime": "seconds",
+      "throughput": "rows_selected/runtime_median",
+      "cpu": "seconds"
+    }
+  }
+}

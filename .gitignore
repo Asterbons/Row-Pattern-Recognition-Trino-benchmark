@@ -20,4 +20,5 @@ plan.md
 COMMANDS.md
 output_VM/
 figures_VM/
-
+.claude/
+misc/

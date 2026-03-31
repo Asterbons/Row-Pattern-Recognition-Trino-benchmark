@@ -4,7 +4,7 @@
 #
 # Key differences from original:
 #   - Trino: mem_limit 12GB, uses jvm.scalability.config (Xmx8G) + config.scalability.properties
-#           (query.max-memory=6GB, spill-enabled=true) — fits in a 16GB Codespace alongside PG
+#           (query.max-memory=6GB) — fits in a 16GB Codespace alongside PG
 #   - Postgres: mem_limit 6GB, uses init-scripts-scalability/ for per-size data loading
 #   - Benchmark: same as original
 
