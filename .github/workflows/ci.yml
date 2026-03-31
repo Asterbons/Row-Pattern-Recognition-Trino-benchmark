@@ -83,8 +83,8 @@ jobs:
         run: |
           sed -i 's/\r$//' etc/trino/jvm.config etc/trino/config.properties
           sed -i 's/-Xmx12G/-Xmx4G/' etc/trino/jvm.config
-          sed -i 's/query.max-memory=8GB/query.max-memory=3GB/' etc/trino/config.properties
-          sed -i 's/query.max-memory-per-node=8GB/query.max-memory-per-node=3GB/' etc/trino/config.properties
+          sed -i 's/query.max-memory=8GB/query.max-memory=2GB/' etc/trino/config.properties
+          sed -i 's/query.max-memory-per-node=8GB/query.max-memory-per-node=2GB/' etc/trino/config.properties
 
       - name: Generate init SQL for tiny dataset
         run: |
