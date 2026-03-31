@@ -1,0 +1,27 @@
+{
+  "name": "RPR Trino Benchmark",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "dockerDashComposeVersion": "v2"
+    }
+  },
+  "forwardPorts": [8081, 5432],
+  "portsAttributes": {
+    "8081": { "label": "Trino UI" },
+    "5432": { "label": "PostgreSQL" }
+  },
+  "postCreateCommand": "python3 -m venv .venv && source .venv/bin/activate && pip install -q -r requirements.txt",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-azuretools.vscode-docker"
+      ]
+    },
+    "codespaces": {
+      "openFiles": ["README.md"]
+    }
+  }
+}

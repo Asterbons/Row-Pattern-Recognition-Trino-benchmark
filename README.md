@@ -1,10 +1,11 @@
 # Row Pattern Recognition: Benchmarking Suite
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://python.org)
-[![Trino](https://img.shields.io/badge/Trino-479-purple)](https://trino.io)
+[![Trino](https://img.shields.io/badge/Trino-434-purple)](https://trino.io)
 [![License](https://img.shields.io/badge/License-MIT-green)](#license)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/VetLyong/trino)
 
-> **Task 3** – RPRDPS Module, Humboldt-Universität zu Berlin
+> Performance evaluation and scalability study of SQL `MATCH_RECOGNIZE`. Conducted as a Semester Research Project at Humboldt-Universität zu Berlin.
 
 This project focuses on the analysis and benchmarking of `MATCH_RECOGNIZE` implementations in **Trino**.
 
@@ -21,10 +22,10 @@ Dieses Projekt konzentriert sich auf die Analyse und das Benchmarking von `MATCH
 - [Project Structure](#-project-structure)
 - [Prerequisites](#-prerequisites)
 - [Installation](#-installation)
-- [Data Generation (MR5)](#-data-generation-mr5)
-- [Benchmarking Execution (MR6)](#-benchmarking-execution-mr6)
-- [Metadata & Fairness (MR8)](#-metadata--fairness-mr8)
-- [How to Reproduce (MR11)](#-how-to-reproduce-mr11)
+- [Data Generation](#-data-generation)
+- [Benchmarking Execution](#-benchmarking-execution)
+- [Metadata & Fairness](#-metadata--fairness)
+- [How to Reproduce](#-how-to-reproduce)
 - [Sample Results](#-sample-results)
 - [License](#license)
 - [Contact](#contact)
@@ -36,17 +37,21 @@ Dieses Projekt konzentriert sich auf die Analyse und das Benchmarking von `MATCH
 ```
 trino/
 ├── Generator/              # Synthetic data generation scripts
-│   └── Generator.py        # Main data generator (Berlin crime data)
+│   ├── Generator.py        # Main data generator (Berlin crime data)
+│   └── generate_all_scales.py  # Generates all scalability dataset sizes
 ├── queries/                # SQL files for MATCH_RECOGNIZE patterns
 ├── datasets/               # Generated CSV data files
-├── results/
-│   ├── mr6_results.csv     # Raw performance measurements
-│   ├── mr6_metadata.json   # System configuration & environment
-│   └── mr6_stats.json      # Statistical summaries (Median, Quartiles)
+├── output/
+│   ├── results.csv         # Raw performance measurements
+│   ├── metadata.json       # System configuration & environment
+│   └── stats.json          # Statistical summaries (Median, Quartiles)
 ├── figures/                # Generated plots for analysis
 ├── benchmark.py            # Benchmark execution script
-├── plot_results.py         # Visualization script
-└── docker-compose.yml      # Docker configuration for Trino
+├── plot_results.py         # Visualization script (standard benchmark)
+├── plot_scalability.py     # Visualization script (scalability results)
+├── run_scalability.py      # Scalability benchmark runner
+├── docker-compose.yml      # Docker configuration for Trino
+└── docker-compose.scalability.yml  # Docker config with extra memory for scalability tests
 ```
 
 ---
@@ -56,29 +61,23 @@ trino/
 | Requirement   | Version     | Notes                          |
 |---------------|-------------|--------------------------------|
 | Python        | 3.8+        | Core runtime                   |
-| Trino         | 479         | Query engine                   |
+| Trino         | 434         | Query engine                   |
 | PostgreSQL    | 12+         | Storage layer (via connector)  |
-| Docker        | 20+         | Container runtime (optional)   |
-
-### Python Dependencies
-
-```
-pandas
-numpy
-trino
-requests
-matplotlib  # for plot_results.py
-```
-
-> [!TIP]
-> Install all dependencies with:
-> ```bash
-> pip install pandas numpy trino requests matplotlib
-> ```
+| Docker        | 20+         | Container runtime              |
 
 ---
 
 ## Installation
+
+### Option A — GitHub Codespaces (recommended, zero setup)
+
+Click the **Open in GitHub Codespaces** badge above. Docker and Python are pre-installed; the venv is created automatically. Then just run:
+
+```bash
+bash run_all.sh
+```
+
+### Option B — Local
 
 1. **Clone the repository:**
    ```bash
@@ -86,19 +85,14 @@ matplotlib  # for plot_results.py
    cd trino
    ```
 
-2. **Start Trino (Docker):**
-   ```bash
-   docker-compose up -d
-   ```
+2. **Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) and make sure it is running.**
 
-3. **Verify Trino is running:**
-   ```bash
-   curl http://localhost:8080/v1/info
-   ```
+> [!TIP]
+> Python dependencies are managed automatically by `run_all.sh` inside a `.venv` virtualenv. No manual `pip install` needed.
 
 ---
 
-## Data Generation (MR5)
+## Data Generation
 
 The dataset is generated using a reproducible Python script with fixed seeds. We simulate Berlin crime data to test pattern matching performance.
 
@@ -130,7 +124,19 @@ Der Datensatz wird mit einem reproduzierbaren Python-Skript und fixierten Seeds 
 
 ---
 
-## Benchmarking Execution (MR6)
+## Methodology
+
+The benchmark is designed as a controlled experiment to isolate `MATCH_RECOGNIZE` performance characteristics:
+
+| Decision | Rationale |
+|---|---|
+| **Scale factors 1K – 10M rows** | Covers three orders of magnitude to reveal linear vs. super-linear scaling behavior and memory pressure thresholds. |
+| **Seed 42** | A single fixed seed ensures bitwise-identical datasets across environments, making results reproducible without shipping large CSV files. |
+| **1 warmup + 5 measurement iterations** | The warmup primes JVM JIT compilation and OS page caches. Five iterations provide enough samples to compute a stable median and inter-quartile range while keeping total runtime practical. |
+| **12 partitions (Berlin districts)** | Maps naturally to the 12 real Berlin districts, giving each partition a distinct coordinate cluster and crime-type distribution for realistic spatial queries. |
+| **Isolated Docker environment** | Eliminates host-level interference (other processes, caching differences) and guarantees a reproducible Trino + PostgreSQL stack. |
+
+## Benchmarking Execution
 
 The `benchmark.py` script automates query execution against the Trino engine.
 
@@ -168,7 +174,32 @@ Das Skript `benchmark.py` automatisiert die Ausführung von Abfragen gegen die T
 
 ---
 
-## Metadata & Fairness (MR8)
+## Scalability Benchmarking
+
+To evaluate how `MATCH_RECOGNIZE` scales with data volume, a separate scalability benchmark is included.
+
+### Generate all dataset sizes (1K – 10M rows)
+
+```bash
+python Generator/generate_all_scales.py
+```
+
+### Run the scalability benchmark
+
+```bash
+# Start Trino with extra memory
+docker compose -f docker-compose.scalability.yml up -d
+
+# Run scalability benchmark
+python run_scalability.py
+
+# Generate scalability plots
+python plot_scalability.py
+```
+
+---
+
+## Metadata & Fairness
 
 To ensure a fair comparison, the following artifacts are included:
 
@@ -186,7 +217,7 @@ To ensure a fair comparison, the following artifacts are included:
 
 ### Included Metadata
 
-- `mr6_metadata.json` – Trino version (479), session properties, hardware environment
+- `metadata.json` – Trino version (434), session properties, hardware environment
 - **Isolation:** Benchmarks run in an isolated Docker environment
 
 <details>
@@ -197,24 +228,47 @@ Architektur (Compute vs. Storage): Trino fungiert als Compute-Engine, während P
 
 ---
 
-## How to Reproduce (MR11)
+## How to Reproduce
 
-Follow these steps to reproduce the benchmark:
+### One-click (recommended)
 
 ```bash
-# 1. Ensure Trino (v479) and PostgreSQL are running
-docker-compose up -d
+bash run_all.sh
+```
 
-# 2. Generate the dataset
+This single command will:
+1. Check that Docker is installed and running
+2. Create a `.venv` virtualenv and install all Python dependencies
+3. Generate the standard 1M-row dataset (seed=42) and all scalability datasets (1K–10M)
+4. Run the standard benchmark and produce plots in `figures/`
+5. Run the scalability benchmark and produce plots in `output/scalability/`
+
+```bash
+# Skip data generation if datasets already exist
+bash run_all.sh --skip-gen
+```
+
+### Manual step-by-step
+
+```bash
+# 1. Create and activate virtualenv
+python3 -m venv .venv
+source .venv/bin/activate          # Windows Git Bash / Linux / macOS
+# .venv\Scripts\activate           # Windows CMD / PowerShell
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Generate the dataset
 python Generator/Generator.py --type large --scale 1 --partitions 12 --seed 42
 
-# 3. Load CSV into PostgreSQL table 'crime_data'
-# (Use your preferred method: psql, pgAdmin, etc.)
+# 4. Start Docker stack (CSV is loaded automatically on container startup)
+docker compose up -d
 
-# 4. Run the benchmark
+# 5. Run the benchmark
 python benchmark.py
 
-# 5. Generate visualization plots
+# 6. Generate visualization plots
 python plot_results.py
 ```
 
@@ -251,10 +305,10 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ## Contact
 
-**Team 3 – Benchmarking**  
-RPRDPS Module  
-Humboldt-Universität zu Berlin
+**Vet Lyong**  
+Semester Research Project – Humboldt-Universität zu Berlin  
+[GitHub](https://github.com/) · [LinkedIn](https://linkedin.com/)
 
 ---
 
-<sub>Last updated: January 2026</sub>
+<sub>Last updated: March 2026</sub>

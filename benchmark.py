@@ -22,14 +22,14 @@ ITERATIONS = 5
 WARMUP_RUNS = 1
 
 def get_system_metadata(conn):
-    """Collect system and Trino metadata (MR6 requirement)"""
+    """Collect system and Trino metadata"""
     cur = conn.cursor()
     
     # Get Trino version
     try:
         cur.execute("SELECT version()")
         trino_version = cur.fetchone()[0]
-    except:
+    except Exception:
         trino_version = "unknown"
     
     # Get Trino configuration
@@ -38,7 +38,7 @@ def get_system_metadata(conn):
         cur.execute("SHOW SESSION")
         session_props = cur.fetchall()
         trino_config_info['session_properties'] = {prop[0]: prop[1] for prop in session_props[:10]}
-    except:
+    except Exception:
         pass
     
     # Get cluster info
@@ -47,7 +47,7 @@ def get_system_metadata(conn):
         nodes = cur.fetchall()
         trino_config_info['cluster_nodes'] = len(nodes)
         trino_config_info['coordinator_count'] = sum(1 for n in nodes if n[3])
-    except:
+    except Exception:
         trino_config_info['cluster_nodes'] = 'unknown'
     
     # Get host hardware info
@@ -74,7 +74,7 @@ def get_system_metadata(conn):
         else:
             # Windows/Mac fallback (less detailed for CPU model usually)
             cpu_model = platform.processor()
-    except:
+    except Exception:
         pass
 
     metadata = {
@@ -104,7 +104,7 @@ def get_input_row_count(cursor):
         cursor.execute("SELECT count(*) FROM crime_data")
         total_rows = cursor.fetchone()[0]
         return total_rows
-    except:
+    except Exception:
         return None
 
 def parse_duration_to_seconds(duration_str):
@@ -131,7 +131,7 @@ def parse_duration_to_seconds(duration_str):
         # Try to parse as numeric (assume seconds)
         try:
             return float(duration_str)
-        except:
+        except Exception:
             return 0
 
 def parse_memory_to_mb(memory_str):
@@ -343,9 +343,9 @@ def run_benchmark(dataset_size=None):
         output_dir = os.path.join(OUTPUT_DIR, 'scalability', f'n_{dataset_size}')
     else:
         output_dir = OUTPUT_DIR
-    output_file = os.path.join(output_dir, 'mr6_results.csv')
-    metadata_file = os.path.join(output_dir, 'mr6_metadata.json')
-    stats_file = os.path.join(output_dir, 'mr6_stats.json')
+    output_file = os.path.join(output_dir, 'results.csv')
+    metadata_file = os.path.join(output_dir, 'metadata.json')
+    stats_file = os.path.join(output_dir, 'stats.json')
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -356,7 +356,7 @@ def run_benchmark(dataset_size=None):
     # Get system metadata
     metadata = get_system_metadata(conn)
     print("=" * 70)
-    print("TRINO BENCHMARK - MR6 Performance Metrics")
+    print("TRINO BENCHMARK - Performance Metrics")
     print("=" * 70)
     print(f"System: {metadata.get('system')}")
     print(f"Trino version: {metadata.get('trino_version')}")

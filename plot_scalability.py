@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # plot_scalability.py
-# Reads output/scalability/n_*/mr6_results.csv and generates log-log scalability charts.
+# Reads output/scalability/n_*/results.csv and generates log-log scalability charts.
 #
 # Usage: python plot_scalability.py
 
@@ -24,7 +24,7 @@ OOM_COLOR = 'red'
 
 
 def load_results():
-    pattern = os.path.join(INPUT_DIR, 'n_*', 'mr6_results.csv')
+    pattern = os.path.join(INPUT_DIR, 'n_*', 'results.csv')
     files = sorted(glob.glob(pattern))
     if not files:
         raise FileNotFoundError(

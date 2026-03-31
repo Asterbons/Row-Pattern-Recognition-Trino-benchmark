@@ -106,14 +106,7 @@ def generate_crime_data(args, current_weights=None):
             # Use provided weights or default
             types = np.random.choice(CRIME_TYPES, size=rows_per_part, p=current_weights)
             
-        # 3. Coordinates (lat, lon)
-        # Generate crime "spots". 
-        # Noise for district coordinates.
-        lat_offset = np.random.normal(0, 0.01, size=rows_per_part) + (p * 0.02) # District shift
-        lon_offset = np.random.normal(0, 0.01, size=rows_per_part) + (p * 0.02)
-        
-        lats = base_lat + lat_offset
-        lons = base_lon + lon_offset
+        # 3. Coordinates (lat, lon) — already computed above from district center
 
         # 4. Generate unique IDs
         start_id = p * rows_per_part

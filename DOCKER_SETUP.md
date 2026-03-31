@@ -53,7 +53,7 @@ docker compose ps
 docker compose run --rm benchmark python benchmark.py
 ```
 
-**Results appear in:** `output/mr6_results.csv`, `output/mr6_metadata.json`, `output/mr6_stats.json`
+**Results appear in:** `output/results.csv`, `output/metadata.json`, `output/stats.json`
 
 ## Verification Tests
 

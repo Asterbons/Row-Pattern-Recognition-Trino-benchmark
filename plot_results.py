@@ -6,8 +6,8 @@ import json
 
 # Configuration
 INPUT_DIR = 'output'
-INPUT_FILE = os.path.join(INPUT_DIR, 'VM_results.csv')
-METADATA_FILE = os.path.join(INPUT_DIR, 'VM_metadata.json')
+INPUT_FILE = os.path.join(INPUT_DIR, 'results.csv')
+METADATA_FILE = os.path.join(INPUT_DIR, 'metadata.json')
 OUTPUT_DIR = 'figures'
 
 # Create output directory
@@ -266,7 +266,7 @@ def generate_summary_stats(df, metadata):
     # Create summary report
     with open(f'{OUTPUT_DIR}/summary_report.txt', 'w') as f:
         f.write("=" * 70 + "\n")
-        f.write("BENCHMARK SUMMARY REPORT - MR6 Requirements\n")
+        f.write("BENCHMARK SUMMARY REPORT\n")
         f.write("=" * 70 + "\n\n")
         
         if metadata:
@@ -338,7 +338,7 @@ def generate_summary_stats(df, metadata):
     print("✓ Generated: summary_report.txt")
 
 def main():
-    print("=== MR7: Generating Plots and Analysis ===\n")
+    print("=== Generating Plots and Analysis ===\n")
     
     # Load data
     df, metadata = load_data()

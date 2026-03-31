@@ -1,6 +1,0 @@
-# Force LF line endings for files that are mounted into Linux Docker containers
-# Without this, Windows Git will save them with CRLF, causing Trino to crash
-# with exit code 100 ("Unrecognized JVM option: -Xmx12G\r")
-etc/trino/jvm.config        text eol=lf
-etc/trino/config.properties text eol=lf
-catalog/*.properties        text eol=lf
