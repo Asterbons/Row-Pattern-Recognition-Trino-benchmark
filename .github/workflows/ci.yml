@@ -1,0 +1,147 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Job 1: script & Python syntax ──────────────────────────────────────────
+  lint:
+    name: Syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check shell script syntax
+        run: bash -n run_all.sh
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check Python syntax
+        run: |
+          python -m py_compile benchmark.py
+          python -m py_compile plot_results.py
+          python -m py_compile plot_scalability.py
+          python -m py_compile run_scalability.py
+          python -m py_compile Generator/Generator.py
+          python -m py_compile Generator/generate_all_scales.py
+
+  # ── Job 2: venv + deps + data generation ───────────────────────────────────
+  generate:
+    name: Virtualenv + data generation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Create venv and install dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install -q -r requirements.txt
+
+      - name: Generate tiny dataset
+        run: |
+          source .venv/bin/activate
+          python Generator/Generator.py --type tiny --seed 42
+
+      - name: Verify CSV was created
+        run: |
+          ls -lh datasets/tiny/
+          wc -l datasets/tiny/crime_data.csv
+
+  # ── Job 3: Trino smoke test (reduced JVM heap for CI) ──────────────────────
+  smoke:
+    name: Trino smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install -q -r requirements.txt
+
+      - name: Generate tiny dataset
+        run: |
+          source .venv/bin/activate
+          python Generator/Generator.py --type tiny --seed 42
+
+      # Override Trino JVM config with CI-safe heap (4G instead of 12G)
+      - name: Patch Trino JVM config for CI
+        run: |
+          sed -i 's/-Xmx12G/-Xmx4G/' etc/trino/jvm.config
+          sed -i 's/query.max-memory=8GB/query.max-memory=3GB/' etc/trino/config.properties
+          sed -i 's/query.max-memory-per-node=8GB/query.max-memory-per-node=3GB/' etc/trino/config.properties
+          cat etc/trino/jvm.config
+          cat etc/trino/config.properties
+
+      - name: Generate init SQL for tiny dataset
+        run: |
+          mkdir -p init-scripts
+          cat > init-scripts/init-db.sql << 'EOF'
+          CREATE TABLE IF NOT EXISTS crime_data (
+              id            INTEGER PRIMARY KEY,
+              district      VARCHAR(100),
+              datetime      TIMESTAMP,
+              primary_type  VARCHAR(50),
+              lat           DOUBLE PRECISION,
+              lon           DOUBLE PRECISION
+          );
+          COPY crime_data (id, district, datetime, primary_type, lat, lon)
+          FROM '/project_data/datasets/tiny/crime_data.csv'
+          DELIMITER ','
+          CSV HEADER;
+          EOF
+
+      - name: Start Docker stack
+        run: docker compose up -d
+
+      - name: Wait for Trino to be ready
+        run: |
+          timeout=180
+          elapsed=0
+          until curl -sf http://localhost:8081/v1/info | python3 -c "import sys,json; d=json.load(sys.stdin); sys.exit(0 if not d.get('starting',True) else 1)" 2>/dev/null; do
+            sleep 5
+            elapsed=$((elapsed + 5))
+            echo "  ... ${elapsed}s elapsed"
+            if [[ $elapsed -ge $timeout ]]; then
+              echo "Trino did not become ready within ${timeout}s"
+              docker compose logs
+              exit 1
+            fi
+          done
+          echo "Trino is ready"
+
+      - name: Smoke test — run a simple query via Trino
+        run: |
+          source .venv/bin/activate
+          python3 - << 'EOF'
+          import trino
+          conn = trino.dbapi.connect(
+              host='localhost', port=8081, user='admin',
+              catalog='postgres', schema='public',
+          )
+          cur = conn.cursor()
+          cur.execute("SELECT count(*) FROM crime_data")
+          count = cur.fetchone()[0]
+          print(f"crime_data row count: {count}")
+          assert count > 0, "Table is empty — data loading failed"
+          print("Smoke test PASSED")
+          EOF
+
+      - name: Show Docker logs on failure
+        if: failure()
+        run: docker compose logs
