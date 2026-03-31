@@ -107,7 +107,7 @@ docker compose up -d
 wait_for_trino
 
 step "Running benchmark.py..."
-python3 benchmark.py
+TRINO_PORT=8081 python3 benchmark.py
 
 step "Generating plots and report..."
 python3 plot_results.py
