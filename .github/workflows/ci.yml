@@ -89,54 +89,27 @@ jobs:
       - name: Generate init SQL for tiny dataset
         run: |
           mkdir -p init-scripts
-          cat > init-scripts/init-db.sql << 'SQLEOF'
-CREATE TABLE IF NOT EXISTS crime_data (
-    id            INTEGER PRIMARY KEY,
-    district      VARCHAR(100),
-    datetime      TIMESTAMP,
-    primary_type  VARCHAR(50),
-    lat           DOUBLE PRECISION,
-    lon           DOUBLE PRECISION
-);
-COPY crime_data (id, district, datetime, primary_type, lat, lon)
-FROM '/project_data/datasets/tiny/crime_data.csv'
-DELIMITER ','
-CSV HEADER;
-SQLEOF
-          echo "--- init-db.sql ---"
+          printf '%s\n' \
+            'CREATE TABLE IF NOT EXISTS crime_data (' \
+            '    id            INTEGER PRIMARY KEY,' \
+            '    district      VARCHAR(100),' \
+            '    datetime      TIMESTAMP,' \
+            '    primary_type  VARCHAR(50),' \
+            '    lat           DOUBLE PRECISION,' \
+            '    lon           DOUBLE PRECISION' \
+            ');' \
+            'COPY crime_data (id, district, datetime, primary_type, lat, lon)' \
+            "FROM '/project_data/datasets/tiny/crime_data.csv'" \
+            "DELIMITER ','" \
+            'CSV HEADER;' \
+            > init-scripts/init-db.sql
+          echo '--- init-db.sql ---'
           cat init-scripts/init-db.sql
 
-      - name: Start Docker stack
-        run: docker compose up -d
-
-      - name: Wait for Trino to become healthy
+      - name: Start stack and run smoke test inside Docker
         run: |
-          for i in $(seq 1 30); do
-            STATUS=$(docker inspect --format='{{.State.Health.Status}}' trino-jedi 2>/dev/null || echo "missing")
-            echo "  [$i/30] trino-jedi health: $STATUS"
-            if [ "$STATUS" = "healthy" ]; then echo "Trino is healthy!"; exit 0; fi
-            if [ "$STATUS" = "unhealthy" ]; then
-              echo "--- trino-jedi logs ---"; docker logs trino-jedi; exit 1
-            fi
-            sleep 10
-          done
-          echo "Timed out waiting for Trino"; docker logs trino-jedi; exit 1
-
-      - name: Smoke test
-        run: |
-          docker compose run --rm benchmark python3 - << 'EOF'
-import trino
-conn = trino.dbapi.connect(
-    host='trino', port=8080, user='admin',
-    catalog='postgres', schema='public',
-)
-cur = conn.cursor()
-cur.execute("SELECT count(*) FROM crime_data")
-count = cur.fetchone()[0]
-print(f"crime_data row count: {count}")
-assert count > 0, "Table is empty — data loading failed"
-print("Smoke test PASSED")
-EOF
+          docker compose up -d
+          docker compose run --rm -v "$PWD/smoke_test.py:/smoke_test.py" benchmark python3 /smoke_test.py
 
       - name: Show Docker logs on failure
         if: failure()
