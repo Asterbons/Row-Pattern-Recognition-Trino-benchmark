@@ -78,6 +78,14 @@ Click the **Open in GitHub Codespaces** badge above. Docker and Python are pre-i
 bash run_all.sh
 ```
 
+> [!WARNING]
+> **Codespace memory limitation:** The default Codespace (16 GB RAM) is not sufficient for the full scalability benchmark (Phase 3). Trino requires up to 12 GB JVM heap and runs alongside PostgreSQL, leaving little headroom for memory-intensive query patterns. Specifically:
+> - **Greedy quantifier queries** (`MATCH_RECOGNIZE` with `+` or `*`) require O(n²) intermediate state and crash Trino at dataset sizes ≥ 10K rows, causing all subsequent queries in that run to fail as well.
+> - **10M-row datasets** exhaust available memory even for simple patterns, producing no results at all.
+> - Sizes 1K and smaller complete successfully for all query patterns.
+>
+> For full scalability results, run on a machine with at least 32 GB RAM.
+
 ### Option B — Local
 
 1. **Clone the repository:**
