@@ -4,6 +4,7 @@
 [![Trino](https://img.shields.io/badge/Trino-434-purple)](https://trino.io)
 [![License](https://img.shields.io/badge/License-MIT-green)](#license)
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/VetLyong/trino)
+[![Docker Hub](https://img.shields.io/docker/pulls/asterbons/rpr-benchmark)](https://hub.docker.com/r/asterbons/rpr-benchmark)
 
 > Performance evaluation and scalability study of SQL `MATCH_RECOGNIZE`. Conducted as a Semester Research Project at Humboldt-Universität zu Berlin.
 
