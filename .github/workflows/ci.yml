@@ -68,7 +68,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install dependencies (for data generation only)
         run: |
           python -m venv .venv
           source .venv/bin/activate
@@ -79,18 +79,14 @@ jobs:
           source .venv/bin/activate
           python Generator/Generator.py --type tiny --seed 42
 
-      # Override Trino JVM config with CI-safe heap (4G instead of 12G)
-      - name: Patch Trino JVM config for CI
+      - name: Patch Trino JVM config for CI (4G heap instead of 12G)
         run: |
           sed -i 's/-Xmx12G/-Xmx4G/' etc/trino/jvm.config
           sed -i 's/query.max-memory=8GB/query.max-memory=3GB/' etc/trino/config.properties
           sed -i 's/query.max-memory-per-node=8GB/query.max-memory-per-node=3GB/' etc/trino/config.properties
-          cat etc/trino/jvm.config
-          cat etc/trino/config.properties
 
       - name: Generate init SQL for tiny dataset
         run: |
-          mkdir -p init-scripts
           cat > init-scripts/init-db.sql << 'EOF'
           CREATE TABLE IF NOT EXISTS crime_data (
               id            INTEGER PRIMARY KEY,
@@ -106,52 +102,22 @@ jobs:
           CSV HEADER;
           EOF
 
-      - name: Start Docker stack
-        run: docker compose up -d
-
-      - name: Wait for Trino to be ready
+      - name: Start stack and run smoke test inside Docker
         run: |
-          timeout=180
-          elapsed=0
-          # Step 1: coordinator not starting
-          until curl -sf http://localhost:8081/v1/info | python3 -c "import sys,json; d=json.load(sys.stdin); sys.exit(0 if not d.get('starting',True) else 1)" 2>/dev/null; do
-            sleep 5; elapsed=$((elapsed+5))
-            echo "  ... coordinator not ready (${elapsed}s)"
-            if [[ $elapsed -ge $timeout ]]; then docker compose logs; exit 1; fi
-          done
-          echo "Coordinator ready — waiting for active nodes via REST..."
-          # Step 2: /v1/node returns active nodes (no query engine needed)
-          until curl -sf http://localhost:8081/v1/node | python3 -c "import sys,json; nodes=json.load(sys.stdin); sys.exit(0 if any(n.get('state')=='active' for n in nodes) else 1)" 2>/dev/null; do
-            sleep 5; elapsed=$((elapsed+5))
-            echo "  ... no active nodes yet (${elapsed}s)"
-            if [[ $elapsed -ge $timeout ]]; then docker compose logs; exit 1; fi
-          done
-          echo "Active nodes registered — waiting 10s for full initialisation..."
-          sleep 10
-
-      - name: Smoke test — run a simple query via Trino
-        run: |
-          source .venv/bin/activate
-          python3 - << 'EOF'
-          import trino, time
-          for attempt in range(1, 7):
-              try:
-                  conn = trino.dbapi.connect(
-                      host='localhost', port=8081, user='admin',
-                      catalog='postgres', schema='public',
-                  )
-                  cur = conn.cursor()
-                  cur.execute("SELECT count(*) FROM crime_data")
-                  count = cur.fetchone()[0]
-                  print(f"crime_data row count: {count}")
-                  assert count > 0, "Table is empty — data loading failed"
-                  print("Smoke test PASSED")
-                  break
-              except Exception as e:
-                  print(f"Attempt {attempt}/6 failed: {e}")
-                  if attempt == 6:
-                      raise
-                  time.sleep(10)
+          docker compose up -d
+          # benchmark service depends_on trino (service_healthy) — Docker waits automatically
+          docker compose run --rm benchmark python3 - << 'EOF'
+          import trino
+          conn = trino.dbapi.connect(
+              host='trino', port=8080, user='admin',
+              catalog='postgres', schema='public',
+          )
+          cur = conn.cursor()
+          cur.execute("SELECT count(*) FROM crime_data")
+          count = cur.fetchone()[0]
+          print(f"crime_data row count: {count}")
+          assert count > 0, "Table is empty — data loading failed"
+          print("Smoke test PASSED")
           EOF
 
       - name: Show Docker logs on failure
