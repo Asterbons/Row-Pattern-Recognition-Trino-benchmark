@@ -9,7 +9,7 @@ ALL ROWS PER MATCH;ja;nein;ja;
 ONE ROW PER MATCH;ja;ja;ja;
 CLASSIFIER();ja;nein;ja;
 MATCH NUMBER();ja;nein;ja;
-WITHIN;nein;nein;nein;
+WITHIN;nein;ja;nein;
 SUBSET;ja;nein;ja;
 FIRST() / LAST();ja;ja;ja;
 PREV() / NEXT();ja;ja (aber nur mit logischen Offsets) ;ja;
