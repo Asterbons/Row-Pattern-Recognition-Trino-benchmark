@@ -113,57 +113,45 @@ jobs:
         run: |
           timeout=180
           elapsed=0
-          # Step 1: wait for coordinator
+          # Step 1: coordinator not starting
           until curl -sf http://localhost:8081/v1/info | python3 -c "import sys,json; d=json.load(sys.stdin); sys.exit(0 if not d.get('starting',True) else 1)" 2>/dev/null; do
-            sleep 5
-            elapsed=$((elapsed + 5))
+            sleep 5; elapsed=$((elapsed+5))
             echo "  ... coordinator not ready (${elapsed}s)"
-            if [[ $elapsed -ge $timeout ]]; then
-              echo "Trino coordinator did not become ready within ${timeout}s"
-              docker compose logs
-              exit 1
-            fi
+            if [[ $elapsed -ge $timeout ]]; then docker compose logs; exit 1; fi
           done
-          echo "Coordinator ready — waiting for worker nodes..."
-          # Step 2: wait until at least one active node is registered
-          source .venv/bin/activate
-          until python3 -c "
-          import trino, sys
-          try:
-              conn = trino.dbapi.connect(host='localhost', port=8081, user='admin', catalog='system', schema='runtime')
-              cur = conn.cursor()
-              cur.execute(\"SELECT count(*) FROM nodes WHERE state='active'\")
-              n = cur.fetchone()[0]
-              sys.exit(0 if n > 0 else 1)
-          except Exception as e:
-              print(e); sys.exit(1)
-          " 2>/dev/null; do
-            sleep 5
-            elapsed=$((elapsed + 5))
+          echo "Coordinator ready — waiting for active nodes via REST..."
+          # Step 2: /v1/node returns active nodes (no query engine needed)
+          until curl -sf http://localhost:8081/v1/node | python3 -c "import sys,json; nodes=json.load(sys.stdin); sys.exit(0 if any(n.get('state')=='active' for n in nodes) else 1)" 2>/dev/null; do
+            sleep 5; elapsed=$((elapsed+5))
             echo "  ... no active nodes yet (${elapsed}s)"
-            if [[ $elapsed -ge $timeout ]]; then
-              echo "No Trino nodes became active within ${timeout}s"
-              docker compose logs
-              exit 1
-            fi
+            if [[ $elapsed -ge $timeout ]]; then docker compose logs; exit 1; fi
           done
-          echo "Trino nodes ready"
+          echo "Active nodes registered — waiting 10s for full initialisation..."
+          sleep 10
 
       - name: Smoke test — run a simple query via Trino
         run: |
           source .venv/bin/activate
           python3 - << 'EOF'
-          import trino
-          conn = trino.dbapi.connect(
-              host='localhost', port=8081, user='admin',
-              catalog='postgres', schema='public',
-          )
-          cur = conn.cursor()
-          cur.execute("SELECT count(*) FROM crime_data")
-          count = cur.fetchone()[0]
-          print(f"crime_data row count: {count}")
-          assert count > 0, "Table is empty — data loading failed"
-          print("Smoke test PASSED")
+          import trino, time
+          for attempt in range(1, 7):
+              try:
+                  conn = trino.dbapi.connect(
+                      host='localhost', port=8081, user='admin',
+                      catalog='postgres', schema='public',
+                  )
+                  cur = conn.cursor()
+                  cur.execute("SELECT count(*) FROM crime_data")
+                  count = cur.fetchone()[0]
+                  print(f"crime_data row count: {count}")
+                  assert count > 0, "Table is empty — data loading failed"
+                  print("Smoke test PASSED")
+                  break
+              except Exception as e:
+                  print(f"Attempt {attempt}/6 failed: {e}")
+                  if attempt == 6:
+                      raise
+                  time.sleep(10)
           EOF
 
       - name: Show Docker logs on failure
