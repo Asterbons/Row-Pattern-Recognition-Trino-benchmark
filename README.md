@@ -70,7 +70,7 @@ trino/
 
 ## Installation
 
-### Option A — GitHub Codespaces (recommended, zero setup)
+### Option A — GitHub Codespaces
 
 Click the **Open in GitHub Codespaces** badge above. Docker and Python are pre-installed; the venv is created automatically. Then just run:
 
